@@ -159,57 +159,58 @@ class Serwis_Natu_Admin {
     /**
      * Add checkbox fields for package mapping
      */
-    private function add_checkbox_fields() {
-        // Get all checkbox options from the form
-        $checkboxes = $this->get_form_checkboxes();
+   private function add_checkbox_fields() {
+    // Get all checkbox options from the form
+    $checkboxes = $this->get_form_checkboxes();
+    
+    // Get current saved mappings
+    $current_mappings = get_option($this->option_name, array());
+    
+    // Group checkboxes by category for better UI organization
+    $categories = array(
+        'typ'    => __('Typ akwarium', 'serwis-natu'),
+        'cel'    => __('Cel zgłoszenia', 'serwis-natu'),
+        'zakres' => __('Zakres oczekiwanych działań', 'serwis-natu'),
+        'inne'   => __('Inne potrzeby', 'serwis-natu')
+    );
+    
+    foreach ($categories as $category_key => $category_name) {
+        // Get checkboxes for this category (regex instead of hardcoded akw[1])
+        $category_checkboxes = array_filter($checkboxes, function($checkbox) use ($category_key) {
+            return preg_match('/akw\[\d+\]\[' . preg_quote($category_key, '/') . '\]\[\]/', $checkbox['name']);
+        });
         
-        // Get current saved mappings
-        $current_mappings = get_option($this->option_name, array());
-        
-        // Group checkboxes by category for better UI organization
-        $categories = array(
-            'typ' => __('Typ akwarium', 'serwis-natu'),
-            'cel' => __('Cel zgłoszenia', 'serwis-natu'),
-            'zakres' => __('Zakres oczekiwanych działań', 'serwis-natu'),
-            'inne' => __('Inne potrzeby', 'serwis-natu')
-        );
-        
-        foreach ($categories as $category_key => $category_name) {
-            // Get checkboxes for this category
-            $category_checkboxes = array_filter($checkboxes, function($checkbox) use ($category_key) {
-                return strpos($checkbox['name'], "akw[1][{$category_key}][]") !== false;
-            });
+        if (!empty($category_checkboxes)) {
+            // Add a heading for the category
+            add_settings_field(
+                "category_heading_{$category_key}",
+                "<h3>{$category_name}</h3>",
+                function() {},
+                $this->page_slug,
+                'package_mappings_section'
+            );
             
-            if (!empty($category_checkboxes)) {
-                // Add a heading for the category
-                add_settings_field(
-                    "category_heading_{$category_key}",
-                    "<h3>{$category_name}</h3>",
-                    function() {},
-                    $this->page_slug,
-                    'package_mappings_section'
-                );
+            // Add fields for each checkbox in this category
+            foreach ($category_checkboxes as $checkbox) {
+                // Strip "akw[1][...]" from the name, just keep the value as ID
+                $field_id = $checkbox['value'];
                 
-                // Add fields for each checkbox in this category
-                foreach ($category_checkboxes as $checkbox) {
-                    $field_id = str_replace(array('akw[1][', '][]'), '', $checkbox['name']);
-                    
-                    add_settings_field(
-                        "package_mapping_{$field_id}",
-                        $checkbox['label'],
-                        array($this, 'render_package_mapping_field'),
-                        $this->page_slug,
-                        'package_mappings_section',
-                        array(
-                            'id' => $checkbox['value'],
-                            'name' => $checkbox['value'],
-                            'current_mappings' => $current_mappings,
-                        )
-                    );
-                }
+                add_settings_field(
+                    "package_mapping_{$field_id}",
+                    $checkbox['label'],
+                    array($this, 'render_package_mapping_field'),
+                    $this->page_slug,
+                    'package_mappings_section',
+                    array(
+                        'id' => $field_id,
+                        'name' => $field_id,
+                        'current_mappings' => $current_mappings,
+                    )
+                );
             }
         }
     }
+}
 
     /**
      * Render package mapping field
@@ -436,6 +437,8 @@ class Serwis_Natu_Admin {
     public function sanitize_package_mappings($input) {
         $sanitized = array();
         
+        error_log('Sanitizing package mappings: ' . print_r($input, true));
+        
         if (is_array($input)) {
             foreach ($input as $key => $values) {
                 // Sanitize the key
@@ -450,6 +453,8 @@ class Serwis_Natu_Admin {
                 }
             }
         }
+        
+        error_log('Sanitized package mappings: ' . print_r($sanitized, true));
         
         return $sanitized;
     }
@@ -486,6 +491,9 @@ class Serwis_Natu_Admin {
     public static function get_recommended_package($form_data, $service_type, $aquarium_index) {
         $package_mappings = self::get_package_mappings();
         $available_packages = self::get_all_packages();
+        
+        // For debugging
+        error_log('Package mappings: ' . print_r($package_mappings, true));
         
         // Determine package type based on service mode
         $package_type = ($service_type === 'jednorazowa') ? 'one_time' : 'subscription';

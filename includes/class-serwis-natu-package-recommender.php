@@ -23,6 +23,9 @@ class Serwis_Natu_Package_Recommender {
         $recommendations = array();
         $service_type = isset($form_data['tryb_wspolpracy']) ? $form_data['tryb_wspolpracy'] : 'jednorazowa';
         
+        // Debug form data
+        error_log('Form data: ' . print_r($form_data, true));
+        
         // Count aquariums
         $aquarium_count = 1;
         if (isset($form_data['ilosc_akwarium'])) {
@@ -36,12 +39,23 @@ class Serwis_Natu_Package_Recommender {
             }
         }
         
-        // Get recommendations for each aquarium
+        // Get recommendations for each aquarium and format them as expected by the JS
+        $formatted_recommendations = array();
+        
         for ($i = 1; $i <= $aquarium_count; $i++) {
-            $recommendations[$i] = self::get_package_for_aquarium($form_data, $service_type, $i);
+            $package = self::get_package_for_aquarium($form_data, $service_type, $i);
+            
+            // Format the package data as expected by the JavaScript
+            $formatted_recommendations[] = array(
+                'aquariumIndex' => $i,
+                'packageKey' => $package['key'],
+                'packageName' => $package['name'],
+                'packagePrice' => $package['price'],
+                'packageDescription' => isset($package['description']) ? $package['description'] : 'Usługa dopasowana do potrzeb Twojego akwarium.'
+            );
         }
         
-        return $recommendations;
+        return $formatted_recommendations;
     }
     
     /**
@@ -55,6 +69,13 @@ class Serwis_Natu_Package_Recommender {
     private static function get_package_for_aquarium($form_data, $service_type, $aquarium_index) {
         // Get package mappings from admin settings
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-admin.php';
+        
+        // Debug the form data for this aquarium
+        if (isset($form_data['akw'][$aquarium_index])) {
+            error_log('Aquarium ' . $aquarium_index . ' data: ' . print_r($form_data['akw'][$aquarium_index], true));
+        } else {
+            error_log('No data for aquarium ' . $aquarium_index);
+        }
         
         // Convert service type to package type
         $package_type = 'one_time';

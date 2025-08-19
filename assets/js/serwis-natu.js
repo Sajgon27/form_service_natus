@@ -595,28 +595,21 @@
         // Get form data
         const formData = getFormData();
         
-        // Calculate package recommendations - may return Promise or array
-        const recommendationsResult = calculateRecommendations(formData);
-        
-        // Handle both Promise and direct return cases
-        if (recommendationsResult instanceof Promise) {
-            recommendationsResult.then(function(recommendations) {
+        // Calculate package recommendations (always returns a Promise now)
+        calculateRecommendations(formData)
+            .then(function(recommendations) {
                 // Display recommendations
                 displayRecommendations(recommendations);
                 
                 // Calculate and display cost summary
                 displayCostSummary(recommendations);
+            })
+            .catch(function(error) {
+                // Display error message
+                $container.html('<div class="error-message"><p>' + error.message + '</p><p>Proszę spróbować ponownie lub skontaktować się z administratorem.</p></div>');
+                $costSummary.html('<div class="error-message"><p>Nie można wyświetlić podsumowania kosztów.</p></div>');
+                console.error('Error getting recommendations:', error);
             });
-        } else {
-            // Simulate a short loading delay for better UX with direct calculation
-            setTimeout(function() {
-                // Display recommendations
-                displayRecommendations(recommendationsResult);
-                
-                // Calculate and display cost summary
-                displayCostSummary(recommendationsResult);
-            }, 1000);
-        }
     }
     
     /**
@@ -677,17 +670,30 @@
      * Calculate package recommendations
      * 
      * @param {object} formData Form data
-     * @return {object} Package recommendations
+     * @return {Promise} Promise that resolves with recommendations
      */
     function calculateRecommendations(formData) {
-        // Try to get recommendations via AJAX if available
-        console.log(window.serwisNatuData, serwisNatuData.ajaxurl);
-        if (window.serwisNatuData && serwisNatuData.ajaxurl) {
-            return getRecommendationsViaAjax(formData);
+        // Always get recommendations via AJAX from admin settings
+        if (!window.serwisNatuData) {
+            window.serwisNatuData = {};
+            console.warn('serwisNatuData object not found, creating fallback');
         }
         
-        // Fallback to local calculation if AJAX not available
-        return getRecommendationsLocally(formData);
+        // If ajaxurl isn't set, try to use the WordPress admin-ajax URL
+        if (!serwisNatuData.ajaxurl) {
+            // Check if we can find WordPress admin URL in the page
+            const adminAjaxUrl = '/wp-admin/admin-ajax.php';
+            serwisNatuData.ajaxurl = adminAjaxUrl;
+            console.warn('AJAX URL not found in serwisNatuData, using fallback: ' + adminAjaxUrl);
+        }
+        
+        // Create a nonce if it doesn't exist
+        if (!serwisNatuData.nonce) {
+            serwisNatuData.nonce = '';
+            console.warn('Nonce not found in serwisNatuData');
+        }
+        
+        return getRecommendationsViaAjax(formData);
     }
     
     /**
@@ -698,207 +704,60 @@
      */
     function getRecommendationsViaAjax(formData) {
         return new Promise(function(resolve, reject) {
+            // Make sure we have a valid URL
+            let ajaxUrl = serwisNatuData.ajaxurl || '/wp-admin/admin-ajax.php';
+            
+            // Ensure ajaxUrl is an absolute URL if it doesn't start with http or /
+            if (!ajaxUrl.startsWith('http') && !ajaxUrl.startsWith('/')) {
+                ajaxUrl = '/' + ajaxUrl;
+            }
+            
+            // Get or create a nonce
+            let nonce = '';
+            if (serwisNatuData && serwisNatuData.nonce) {
+                nonce = serwisNatuData.nonce;
+            } else {
+                // Try to get nonce from the page
+                const nonceField = document.querySelector('input[name="_wpnonce"]');
+                if (nonceField) {
+                    nonce = nonceField.value;
+                }
+            }
+            
+            console.log('Sending AJAX request to:', ajaxUrl);
+            
             $.ajax({
-                url: serwisNatuData.ajaxurl,
+                url: ajaxUrl,
                 type: 'POST',
                 data: {
                     action: 'get_package_recommendations',
-                    nonce: serwisNatuData.nonce,
+                    nonce: nonce,
                     form_data: formData
                 },
                 success: function(response) {
+                    console.log('AJAX response:', response);
                     if (response.success && response.data && response.data.recommendations) {
                         resolve(response.data.recommendations);
                     } else {
-                        console.warn('AJAX recommendation failed, falling back to local calculation');
-                        resolve(getRecommendationsLocally(formData));
+                        const errorMessage = response.data && response.data.message ? 
+                            response.data.message : 'Nie udało się uzyskać rekomendacji pakietów.';
+                        console.error('Server error response:', response);
+                        reject(new Error(errorMessage));
                     }
                 },
-                error: function() {
-                    console.warn('AJAX recommendation request failed, falling back to local calculation');
-                    resolve(getRecommendationsLocally(formData));
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', { xhr, status, error });
+                    console.error('Response text:', xhr.responseText);
+                    reject(new Error('Błąd komunikacji z serwerem: ' + (error || status)));
                 }
             });
         });
     }
     
-    /**
-     * Get recommendations locally (fallback)
-     * 
-     * @param {object} formData Form data
-     * @return {object} Package recommendations
+    /* 
+     * Local recommendations function has been removed.
+     * All recommendations are now retrieved exclusively from the admin panel via AJAX.
      */
-    function getRecommendationsLocally(formData) {
-        // Get service type (jednorazowa, pakiet, or dodatkowe)
-        const serviceType = formData.tryb_wspolpracy;
-        
-        // Get aquarium count
-        let aquariumCount = 1;
-        if (formData.ilosc_akwarium === '1') {
-            aquariumCount = 1;
-        } else if (formData.ilosc_akwarium === '2') {
-            aquariumCount = 2;
-        } else if (formData.ilosc_akwarium === 'wiecej') {
-            aquariumCount = parseInt(formData.ilosc_wiecej) || 3;
-            aquariumCount = Math.max(3, Math.min(10, aquariumCount));
-        }
-        
-        // Define available packages
-        const packages = {
-            jednorazowa: {
-                basic: {
-                    name: 'Podstawowy serwis akwarium',
-                    price: 150,
-                    description: 'Podstawowa usługa serwisowa dla akwarium, obejmująca najważniejsze czynności.'
-                },
-                extended: {
-                    name: 'Rozszerzony serwis akwarium',
-                    price: 250,
-                    description: 'Rozszerzona usługa serwisowa z dodatkowymi zabiegami i konsultacją.'
-                },
-                complete: {
-                    name: 'Serwis akwarium od A do Z',
-                    price: 350,
-                    description: 'Kompleksowa usługa serwisowa obejmująca wszystkie potrzebne zabiegi.'
-                },
-                consultation: {
-                    name: 'Konsultacja akwarystyczna',
-                    price: 100,
-                    description: 'Profesjonalna konsultacja bez wykonywania prac serwisowych.'
-                }
-            },
-            pakiet: {
-                monthly_basic: {
-                    name: 'Podstawowy pakiet miesięczny',
-                    price: 300,
-                    description: 'Regularny serwis akwarium wykonywany raz w miesiącu.'
-                },
-                monthly_extended: {
-                    name: 'Rozszerzony pakiet miesięczny',
-                    price: 500,
-                    description: 'Rozszerzony pakiet obsługi akwarium z dodatkowymi zabiegami.'
-                },
-                monthly_complete: {
-                    name: 'Kompleksowy pakiet miesięczny',
-                    price: 800,
-                    description: 'Pełna, kompleksowa opieka nad akwarium z regularnymi wizytami.'
-                }
-            },
-            dodatkowe: {
-                consultation: {
-                    name: 'Konsultacja akwarystyczna',
-                    price: 100,
-                    description: 'Profesjonalna konsultacja dotycząca wybranych zagadnień.'
-                }
-            }
-        };
-        
-        // Map of checkbox values to recommended packages
-        // In a real implementation, this would come from server-side settings
-        const packageMappings = {
-            // Typ akwarium
-            'hightech': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            'biotopowy': { jednorazowa: 'complete', pakiet: 'monthly_complete' },
-            'roslinny': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            'firmowe': { jednorazowa: 'complete', pakiet: 'monthly_complete' },
-            
-            // Cel zgłoszenia
-            'restart': { jednorazowa: 'complete', pakiet: 'monthly_complete' },
-            'dorazna': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            'aranzacja': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            
-            // Zakres oczekiwanych działań
-            'glony': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            'montazSprzetu': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            'aranzacjaDekoracji': { jednorazowa: 'extended', pakiet: 'monthly_extended' },
-            'szkolenie': { jednorazowa: 'complete', pakiet: 'monthly_complete' },
-            
-            // Inne potrzeby
-            'kompleksowo': { jednorazowa: 'complete', pakiet: 'monthly_complete' },
-            'diagnoza': { jednorazowa: 'extended', pakiet: 'monthly_extended' }
-        };
-        
-        const recommendations = [];
-        
-        // For each aquarium, determine the recommended package
-        for (let i = 1; i <= aquariumCount; i++) {
-            // Default to basic package
-            let packageLevel = (serviceType === 'dodatkowe') ? 
-                'consultation' : 
-                (serviceType === 'jednorazowa' ? 'basic' : 'monthly_basic');
-            
-            const aquariumData = formData.akw[i];
-            
-            // If no data for this aquarium, use default
-            if (!aquariumData) {
-                recommendations.push({
-                    aquariumIndex: i,
-                    packageKey: packageLevel,
-                    packageName: packages[serviceType][packageLevel].name,
-                    packagePrice: packages[serviceType][packageLevel].price,
-                    packageDescription: packages[serviceType][packageLevel].description
-                });
-                continue;
-            }
-            
-            // Define package levels for comparison
-            const packageLevels = {
-                jednorazowa: {
-                    'consultation': 1,
-                    'basic': 2,
-                    'extended': 3,
-                    'complete': 4
-                },
-                pakiet: {
-                    'monthly_basic': 1,
-                    'monthly_extended': 2,
-                    'monthly_complete': 3
-                },
-                dodatkowe: {
-                    'consultation': 1
-                }
-            };
-            
-            // Check all selected options for this aquarium
-            // Find the highest level package recommended
-            console.log(packageLevels[serviceType]);
-            let highestLevel = packageLevels[serviceType][packageLevel];
-            console.log(packageLevels[serviceType][packageLevel]);
-            // Function to check a category's selections
-            function checkSelections(selections) {
-                if (!Array.isArray(selections)) return;
-                
-                selections.forEach(function(selection) {
-                    if (packageMappings[selection] && packageMappings[selection][serviceType]) {
-                        const mappedPackage = packageMappings[selection][serviceType];
-                        const mappedLevel = packageLevels[serviceType][mappedPackage];
-                        
-                        if (mappedLevel > highestLevel) {
-                            highestLevel = mappedLevel;
-                            packageLevel = mappedPackage;
-                        }
-                    }
-                });
-            }
-            
-            // Check all categories
-            checkSelections(aquariumData.typ);
-            checkSelections(aquariumData.cel);
-            checkSelections(aquariumData.zakres);
-            checkSelections(aquariumData.inne);
-            
-            // Add the recommendation
-            recommendations.push({
-                aquariumIndex: i,
-                packageKey: packageLevel,
-                packageName: packages[serviceType][packageLevel].name,
-                packagePrice: packages[serviceType][packageLevel].price,
-                packageDescription: packages[serviceType][packageLevel].description
-            });
-        }
-        
-        return recommendations;
-    }
     
     /**
      * Display package recommendations
