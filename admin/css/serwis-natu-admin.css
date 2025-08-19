@@ -1,0 +1,30 @@
+/**
+ * Serwis Natu admin styles
+ */
+
+.package-mapping-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.package-mapping-column {
+    flex: 1 1 250px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+}
+
+.package-mapping-column:last-child {
+    margin-right: 0;
+}
+
+.package-mapping-column label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.package-mapping-column select {
+    width: 100%;
+    max-width: 250px;
+}
