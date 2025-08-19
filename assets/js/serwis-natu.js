@@ -737,8 +737,17 @@
                 },
                 success: function(response) {
                     console.log('AJAX response:', response);
-                    if (response.success && response.data && response.data.recommendations) {
-                        resolve(response.data.recommendations);
+                    if (response.success && response.data) {
+                        // Store extra services globally for later use
+                        if (response.data.extraServices) {
+                            window.extraServices = response.data.extraServices;
+                        }
+                        
+                        if (response.data.recommendations) {
+                            resolve(response.data.recommendations);
+                        } else {
+                            reject(new Error('Brak rekomendacji w odpowiedzi serwera.'));
+                        }
                     } else {
                         const errorMessage = response.data && response.data.message ? 
                             response.data.message : 'Nie udało się uzyskać rekomendacji pakietów.';
@@ -784,8 +793,104 @@
                     <div class="package-description">
                         ${recommendation.packageDescription}
                     </div>
+                    <div class="extra-services-container">
+                        <h4 class="extra-services-title">Usługi dodatkowe:</h4>
+                        <div class="extra-services-list" data-aquarium="${recommendation.aquariumIndex}">
+                            <!-- Extra services will be added here -->
+                        </div>
+                    </div>
                 </div>
             `);
+            
+            // Add extra services if available
+            if (window.extraServices && window.extraServices.length > 0) {
+                const $servicesList = $recommendation.find('.extra-services-list');
+                
+                window.extraServices.forEach(function(service) {
+                    // Check if this is the restart_akwarium service
+                    const isRestartService = service.id === 'restart_akwarium';
+                    
+                    const $serviceItem = $(`
+                        <div class="extra-service-item">
+                            <div class="extra-service-info">
+                                <input type="checkbox" 
+                                    name="extra_service[${recommendation.aquariumIndex}][${service.id}]" 
+                                    data-price="${service.price}" 
+                                    data-aquarium="${recommendation.aquariumIndex}"
+                                    class="extra-service-checkbox ${isRestartService ? 'restart-checkbox' : ''}" 
+                                    id="extra-service-${recommendation.aquariumIndex}-${service.id}"
+                                    ${isRestartService ? 'data-is-restart="true"' : ''}>
+                                <label for="extra-service-${recommendation.aquariumIndex}-${service.id}" class="extra-service-name">
+                                    ${service.name}
+                                    ${service.tooltip ? `<span class="extra-service-tooltip" title="${service.tooltip}">?<span class="tooltip-content">${service.tooltip}</span></span>` : ''}
+                                </label>
+                            </div>
+                            <div class="extra-service-price">+${service.price} zł</div>
+                        </div>
+                    `);
+                    
+                    $servicesList.append($serviceItem);
+                });
+                
+                // Check if restart checkbox is already checked on load and disable other checkboxes
+                const $restartCheckbox = $servicesList.find('.restart-checkbox');
+                if ($restartCheckbox.length && $restartCheckbox.prop('checked')) {
+                    const aquariumIndex = $restartCheckbox.data('aquarium');
+                    const $otherCheckboxes = $(`.extra-service-checkbox[data-aquarium="${aquariumIndex}"]:not([data-is-restart="true"])`);
+                    $otherCheckboxes.prop('disabled', true).prop('checked', false)
+                        .closest('.extra-service-item').addClass('disabled');
+                }
+                
+                // Add event listener for extra service checkboxes
+                $servicesList.find('.extra-service-checkbox').on('change', function() {
+                    const $checkbox = $(this);
+                    const isChecked = this.checked;
+                    const isRestartCheckbox = $checkbox.data('is-restart') === true;
+                    const aquariumIndex = $checkbox.data('aquarium');
+                    
+                    // Add or remove selected class
+                    $checkbox.closest('.extra-service-item').toggleClass('selected', isChecked);
+                    
+                    // Special handling for restart_akwarium checkbox
+                    if (isRestartCheckbox) {
+                        // Get all other checkboxes for this aquarium
+                        const $otherCheckboxes = $(`.extra-service-checkbox[data-aquarium="${aquariumIndex}"]:not([data-is-restart="true"])`);
+                        
+                        if (isChecked) {
+                            // If restart is checked, disable and uncheck all other checkboxes
+                            $otherCheckboxes.prop('disabled', true).prop('checked', false)
+                                .closest('.extra-service-item').removeClass('selected')
+                                .addClass('disabled');
+                        } else {
+                            // If restart is unchecked, enable all other checkboxes
+                            $otherCheckboxes.prop('disabled', false)
+                                .closest('.extra-service-item').removeClass('disabled');
+                        }
+                    } else {
+                        // If any other checkbox is checked, make sure it's not disabled by restart
+                        const $restartCheckbox = $(`.restart-checkbox[data-aquarium="${aquariumIndex}"]`);
+                        if ($restartCheckbox.prop('checked')) {
+                            // Prevent checking if restart is enabled
+                            $checkbox.prop('checked', false);
+                            return false;
+                        }
+                    }
+                    
+                    // Highlight newly selected item
+                    if(isChecked) {
+                        $checkbox.closest('.extra-service-item').addClass('new-item');
+                        setTimeout(() => {
+                            $checkbox.closest('.extra-service-item').removeClass('new-item');
+                        }, 1500);
+                    }
+                    
+                    // Recalculate cost summary when extra services are selected/deselected
+                    displayCostSummary(recommendations);
+                });
+            } else {
+                // If no extra services are available, hide the container
+                $recommendation.find('.extra-services-container').hide();
+            }
             
             $container.append($recommendation);
         });
@@ -810,12 +915,29 @@
         const costItems = [];
         
         recommendations.forEach(function(recommendation) {
+            // Add base package cost
             costItems.push({
                 label: `Akwarium ${recommendation.aquariumIndex} - ${recommendation.packageName}`,
                 price: recommendation.packagePrice
             });
             
             totalCost += recommendation.packagePrice;
+            
+            // Add selected extra services
+            if (window.extraServices && window.extraServices.length > 0) {
+                $(`.extra-service-checkbox[data-aquarium="${recommendation.aquariumIndex}"]:checked`).each(function() {
+                    const $checkbox = $(this);
+                    const servicePrice = parseInt($checkbox.data('price'), 10) || 0;
+                    const serviceName = $checkbox.closest('.extra-service-item').find('.extra-service-name').text().trim();
+                    
+                    costItems.push({
+                        label: `&nbsp;&nbsp;&nbsp;➕ ${serviceName} (Akwarium ${recommendation.aquariumIndex})`,
+                        price: servicePrice
+                    });
+                    
+                    totalCost += servicePrice;
+                });
+            }
         });
         
         // Build HTML

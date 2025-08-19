@@ -21,6 +21,13 @@ class Serwis_Natu {
     private $admin;
     
     /**
+     * Extra services instance
+     *
+     * @var Serwis_Natu_Extra_Services
+     */
+    private $extra_services;
+    
+    /**
      * Initialize the plugin
      *
      * @return void
@@ -71,9 +78,14 @@ class Serwis_Natu {
         // Get recommendations
         $recommendations = Serwis_Natu_Package_Recommender::get_recommendations($form_data);
         
-        // Return recommendations
+        // Get extra services
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
+        $extra_services = Serwis_Natu_Extra_Services::get_extra_services();
+        
+        // Return recommendations and extra services
         wp_send_json_success(array(
-            'recommendations' => $recommendations
+            'recommendations' => $recommendations,
+            'extraServices' => $extra_services
         ));
     }
     
@@ -82,6 +94,7 @@ class Serwis_Natu {
      */
     private function include_files() {
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-package-recommender.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
     }
     
     /**
@@ -89,7 +102,10 @@ class Serwis_Natu {
      */
     private function init_admin() {
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-admin.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
+        
         $this->admin = new Serwis_Natu_Admin();
+        $this->extra_services = new Serwis_Natu_Extra_Services();
         
         // Register admin assets
         add_action('admin_enqueue_scripts', array($this, 'register_admin_assets'));
@@ -126,6 +142,14 @@ class Serwis_Natu {
             SERWIS_NATU_VERSION
         );
         
+        // Register Extra Services CSS
+        wp_register_style(
+            'serwis-natu-extra-services', 
+            SERWIS_NATU_URL . 'assets/css/extra-services.css', 
+            array('serwis-natu-style'), 
+            SERWIS_NATU_VERSION
+        );
+        
         // Register JS
         wp_register_script(
             'serwis-natu-script', 
@@ -145,6 +169,7 @@ class Serwis_Natu {
     public function render_form_shortcode($atts) {
         // Enqueue necessary styles and scripts
         wp_enqueue_style('serwis-natu-style');
+        wp_enqueue_style('serwis-natu-extra-services');
         wp_enqueue_script('serwis-natu-script');
         
         // Initialize form data for JavaScript
