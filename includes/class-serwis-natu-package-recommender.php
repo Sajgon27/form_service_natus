@@ -23,6 +23,9 @@ class Serwis_Natu_Package_Recommender {
         $recommendations = array();
         $service_type = isset($form_data['tryb_wspolpracy']) ? $form_data['tryb_wspolpracy'] : 'jednorazowa';
         
+        // Debug service type specifically
+        error_log('Service type from form: ' . $service_type);
+        
         // Debug form data
         error_log('Form data: ' . print_r($form_data, true));
         
@@ -79,8 +82,10 @@ class Serwis_Natu_Package_Recommender {
         
         // Convert service type to package type
         $package_type = 'one_time';
-        if ($service_type === 'pakiet') {
+        if ($service_type === 'pakiet' || $service_type === 'wielorazowy') {
             $package_type = 'subscription';
+            // Log this for debugging
+            error_log('Using subscription package type for service type: ' . $service_type);
         }
         
         // Default packages

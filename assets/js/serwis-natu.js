@@ -725,6 +725,7 @@
             }
             
             console.log('Sending AJAX request to:', ajaxUrl);
+            console.log('Form data being sent:', formData);
             
             $.ajax({
                 url: ajaxUrl,
