@@ -738,8 +738,18 @@
                 },
                 success: function(response) {
                     console.log('AJAX response:', response);
-                    if (response.success && response.data && response.data.recommendations) {
-                        resolve(response.data.recommendations);
+                    if (response.success && response.data) {
+                        // Store extra services in a global variable for later use
+                        if (response.data.extraServices) {
+                            window.serwisNatuExtraServices = response.data.extraServices;
+                            console.log('Extra services loaded:', window.serwisNatuExtraServices);
+                        }
+                        
+                        if (response.data.recommendations) {
+                            resolve(response.data.recommendations);
+                        } else {
+                            reject(new Error('Nie udało się uzyskać rekomendacji pakietów.'));
+                        }
                     } else {
                         const errorMessage = response.data && response.data.message ? 
                             response.data.message : 'Nie udało się uzyskać rekomendacji pakietów.';
@@ -775,6 +785,11 @@
             return;
         }
         
+        // Get extra services from the global scope if they exist
+        const extraServices = window.serwisNatuExtraServices || [];
+        const hasExtraServices = extraServices && extraServices.length > 0;
+        
+        // For each recommendation, create a package element and add extra services
         recommendations.forEach(function(recommendation) {
             const $recommendation = $(`
                 <div class="package-recommendation" data-aquarium="${recommendation.aquariumIndex}" data-package="${recommendation.packageKey}">
@@ -788,7 +803,57 @@
                 </div>
             `);
             
+            // If we have extra services, add them beneath each package
+            if (hasExtraServices) {
+                const $extraServicesContainer = $('<div class="extra-services-container"></div>');
+                const $extraServicesHeader = $('<h4 class="extra-services-header">Wybierz dodatkowe usługi:</h4>');
+                $extraServicesContainer.append($extraServicesHeader);
+                
+                // Create a list of checkboxes for extra services
+                const $extraServicesList = $('<div class="extra-services-list"></div>');
+                
+                extraServices.forEach(function(service) {
+                    if (!service || !service.name || !service.price) return;
+                    
+                    const serviceId = `extra-service-${recommendation.aquariumIndex}-${service.id || service.name.replace(/\s+/g, '-').toLowerCase()}`;
+                    const $serviceItem = $(`
+                        <div class="extra-service-item">
+                            <label for="${serviceId}">
+                                <input type="checkbox" 
+                                    id="${serviceId}" 
+                                    name="extra_services[${recommendation.aquariumIndex}][]" 
+                                    value="${service.id || service.name}" 
+                                    data-price="${service.price}" 
+                                    class="extra-service-checkbox">
+                                <span class="extra-service-name">${service.name}</span>
+                                <span class="extra-service-price">${service.price} zł</span>
+                            </label>
+                            ${service.description ? `<p class="extra-service-description">${service.description}</p>` : ''}
+                        </div>
+                    `);
+                    
+                    $extraServicesList.append($serviceItem);
+                });
+                
+                $extraServicesContainer.append($extraServicesList);
+                $recommendation.append($extraServicesContainer);
+            }
+            
             $container.append($recommendation);
+        });
+        
+        // Initialize event listeners for extra services
+        setupExtraServicesListeners();
+    }
+    
+    /**
+     * Setup event listeners for extra services
+     */
+    function setupExtraServicesListeners() {
+        // Listen for changes on extra service checkboxes
+        $('.extra-service-checkbox').on('change', function() {
+            // Recalculate total cost when services are selected/deselected
+            updateCostSummary();
         });
     }
     
@@ -806,17 +871,56 @@
             return;
         }
         
+        // Store recommendations globally so we can access them from updateCostSummary
+        window.serwisNatuRecommendations = recommendations;
+        
+        // Update cost summary
+        updateCostSummary();
+    }
+    
+    /**
+     * Update cost summary based on selected packages and extra services
+     */
+    function updateCostSummary() {
+        const $costSummary = $('#cost-summary');
+        $costSummary.empty();
+        
+        const recommendations = window.serwisNatuRecommendations || [];
+        
+        if (!recommendations || recommendations.length === 0) {
+            $costSummary.html('<p>Nie udało się przygotować podsumowania kosztów.</p>');
+            return;
+        }
+        
         // Calculate total cost
         let totalCost = 0;
         const costItems = [];
         
+        // Add package costs
         recommendations.forEach(function(recommendation) {
             costItems.push({
                 label: `Akwarium ${recommendation.aquariumIndex} - ${recommendation.packageName}`,
-                price: recommendation.packagePrice
+                price: recommendation.packagePrice,
+                type: 'package'
             });
             
-            totalCost += recommendation.packagePrice;
+            totalCost += parseFloat(recommendation.packagePrice);
+        });
+        
+        // Add extra services costs
+        $('.extra-service-checkbox:checked').each(function() {
+            const $checkbox = $(this);
+            const servicePrice = parseFloat($checkbox.data('price'));
+            const serviceName = $checkbox.siblings('.extra-service-name').text();
+            const aquariumIndex = $checkbox.closest('.package-recommendation').data('aquarium');
+            
+            costItems.push({
+                label: `Akwarium ${aquariumIndex} - ${serviceName} (usługa dodatkowa)`,
+                price: servicePrice,
+                type: 'extra-service'
+            });
+            
+            totalCost += servicePrice;
         });
         
         // Build HTML
@@ -824,7 +928,7 @@
         
         costItems.forEach(function(item) {
             const $costItem = $(`
-                <div class="cost-item">
+                <div class="cost-item ${item.type}">
                     <span class="cost-item-label">${item.label}</span>
                     <span class="cost-item-price">${item.price} zł</span>
                 </div>
@@ -836,7 +940,7 @@
         const $totalCost = $(`
             <div class="total-cost">
                 <span>Razem:</span>
-                <span>${totalCost} zł</span>
+                <span>${totalCost.toFixed(2)} zł</span>
             </div>
         `);
         
