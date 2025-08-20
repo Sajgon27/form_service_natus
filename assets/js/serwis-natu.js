@@ -499,12 +499,42 @@ $("#submit-form").click(function (e) {
 
   if (validateStep4()) {
     const form = document.getElementById("serwis-natu-form");
-    const data = formDataToNestedObject(form);
+    let data = formDataToNestedObject(form);
+
+    // Merge extra_services into akw
+    for (let akwId in data.akw) {
+      if (data.extra_services && data.extra_services[akwId]) {
+        data.akw[akwId]['extra_services'] = data.extra_services[akwId];
+      } else {
+        data.akw[akwId]['extra_services'] = [];
+      }
+    }
+
+    // Optionally remove extra_services key
+    delete data.extra_services;
 
     console.log(data);
-    console.log("Form submitted - ready to implement order processing");
+     let ajaxurl = 'http://natudev.local/wp-admin/admin-ajax.php';
+    // Send to PHP via AJAX
+    $.ajax({
+      url: ajaxurl, // WordPress AJAX endpoint
+      method: 'POST',
+      data: {
+        action: 'submit_order',
+        form_data: JSON.stringify(data)
+      },
+      success: function (response) {
+        console.log(response);
+        alert("Order submitted successfully!");
+      },
+      error: function (err) {
+        console.error(err);
+        alert("Error submitting order.");
+      }
+    });
   }
 });
+
 
   }
 

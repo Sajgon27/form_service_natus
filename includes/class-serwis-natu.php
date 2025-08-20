@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Main class for the Serwis Natu plugin
  *
@@ -12,58 +13,61 @@ if (!defined('ABSPATH')) {
 /**
  * Main plugin class
  */
-class Serwis_Natu {
+class Serwis_Natu
+{
     /**
      * Admin instance
      *
      * @var Serwis_Natu_Admin
      */
     private $admin;
-    
+
     /**
      * Extra services instance
      *
      * @var Serwis_Natu_Extra_Services
      */
     private $extra_services;
-    
+
     /**
      * Initialize the plugin
      *
      * @return void
      */
-    public function init() {
+    public function init()
+    {
         // Include required files
         $this->include_files();
-        
+
         // Initialize admin
         if (is_admin()) {
             $this->init_admin();
         }
-        
+
         // Register styles and scripts
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
-        
+
         // Register shortcode
         add_shortcode('serwis_natu_form', array($this, 'render_form_shortcode'));
-        
+
         // Register AJAX handlers
         add_action('wp_ajax_get_package_recommendations', array($this, 'ajax_get_package_recommendations'));
         add_action('wp_ajax_nopriv_get_package_recommendations', array($this, 'ajax_get_package_recommendations'));
     }
-    
+
     /**
      * AJAX handler for getting package recommendations
      */
-    public function ajax_get_package_recommendations() {
+    public function ajax_get_package_recommendations()
+    {
         // Check nonce (with fallback for development)
         if (!isset($_POST['nonce']) || (!wp_verify_nonce($_POST['nonce'], 'serwis-natu-form-nonce') && !empty($_POST['nonce']))) {
             // Log the nonce issue for debugging
             error_log('Serwis Natu: Nonce verification failed. Received: ' . sanitize_text_field($_POST['nonce'] ?? 'empty'));
-            
+
             // For development, temporarily bypass the nonce check
             $bypass_nonce = true;
-            
+
             // If not bypassing, return error
             if (!isset($bypass_nonce) || $bypass_nonce !== true) {
                 wp_send_json_error(array(
@@ -71,56 +75,63 @@ class Serwis_Natu {
                 ));
             }
         }
-        
+
         // Get form data
         $form_data = isset($_POST['form_data']) ? $_POST['form_data'] : array();
-        
+
         // Get recommendations
         $recommendations = Serwis_Natu_Package_Recommender::get_recommendations($form_data);
-        
+
         // Get extra services
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
         $extra_services = Serwis_Natu_Extra_Services::get_extra_services();
-        
+
         // Return recommendations and extra services
         wp_send_json_success(array(
             'recommendations' => $recommendations,
             'extraServices' => $extra_services
         ));
     }
-    
+
     /**
      * Include required files
      */
-    private function include_files() {
+    private function include_files()
+    {
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-package-recommender.php';
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-zamowienia.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-single-zamowienie.php';
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-recommended-products.php';
     }
-    
+
     /**
      * Initialize admin
      */
-    private function init_admin() {
+    private function init_admin()
+    {
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-admin.php';
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
-        
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-zamowienia.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-single-zamowienie.php';
+
         $this->admin = new Serwis_Natu_Admin();
         $this->extra_services = new Serwis_Natu_Extra_Services();
-        
+
         // Register admin assets
         add_action('admin_enqueue_scripts', array($this, 'register_admin_assets'));
     }
-    
+
     /**
      * Register admin assets
      */
-    public function register_admin_assets($hook) {
+    public function register_admin_assets($hook)
+    {
         // Only load on our settings page
         if ($hook !== 'toplevel_page_serwis-natu-settings') {
             return;
         }
-        
+
         wp_enqueue_style(
             'serwis-natu-admin-style',
             SERWIS_NATU_URL . 'admin/css/serwis-natu-admin.css',
@@ -128,69 +139,71 @@ class Serwis_Natu {
             SERWIS_NATU_VERSION
         );
     }
-    
+
     /**
      * Register and enqueue styles and scripts
      *
      * @return void
      */
-    public function register_assets() {
+    public function register_assets()
+    {
         // Register CSS
         wp_register_style(
-            'serwis-natu-style', 
-            SERWIS_NATU_URL . 'assets/css/serwis-natu.css', 
-            array(), 
+            'serwis-natu-style',
+            SERWIS_NATU_URL . 'assets/css/serwis-natu.css',
+            array(),
             SERWIS_NATU_VERSION
         );
-        
+
         // Register Extra Services CSS
         wp_register_style(
-            'serwis-natu-extra-services', 
-            SERWIS_NATU_URL . 'assets/css/extra-services.css', 
-            array('serwis-natu-style'), 
+            'serwis-natu-extra-services',
+            SERWIS_NATU_URL . 'assets/css/extra-services.css',
+            array('serwis-natu-style'),
             SERWIS_NATU_VERSION
         );
-        
+
         // Register Recommended Products CSS
         wp_register_style(
-            'serwis-natu-recommended-products', 
-            SERWIS_NATU_URL . 'assets/css/recommended-products.css', 
-            array('serwis-natu-style'), 
+            'serwis-natu-recommended-products',
+            SERWIS_NATU_URL . 'assets/css/recommended-products.css',
+            array('serwis-natu-style'),
             SERWIS_NATU_VERSION
         );
-        
+
         // Register Summary CSS
         wp_register_style(
-            'serwis-natu-summary', 
-            SERWIS_NATU_URL . 'assets/css/summary.css', 
-            array('serwis-natu-style'), 
+            'serwis-natu-summary',
+            SERWIS_NATU_URL . 'assets/css/summary.css',
+            array('serwis-natu-style'),
             SERWIS_NATU_VERSION
         );
-        
+
         // Register JS
         wp_register_script(
-            'serwis-natu-script', 
-            SERWIS_NATU_URL . 'assets/js/serwis-natu.js', 
-            array('jquery'), 
-            SERWIS_NATU_VERSION, 
+            'serwis-natu-script',
+            SERWIS_NATU_URL . 'assets/js/serwis-natu.js',
+            array('jquery'),
+            SERWIS_NATU_VERSION,
             true
         );
     }
-    
+
     /**
      * Render the form shortcode
      *
      * @param array $atts Shortcode attributes
      * @return string The rendered shortcode content
      */
-    public function render_form_shortcode($atts) {
+    public function render_form_shortcode($atts)
+    {
         // Enqueue necessary styles and scripts
         wp_enqueue_style('serwis-natu-style');
         wp_enqueue_style('serwis-natu-extra-services');
         wp_enqueue_style('serwis-natu-recommended-products');
         wp_enqueue_style('serwis-natu-summary');
         wp_enqueue_script('serwis-natu-script');
-        
+
         // Initialize form data for JavaScript
         $form_data = array(
             'ajaxurl' => admin_url('admin-ajax.php'),
@@ -199,26 +212,27 @@ class Serwis_Natu {
             'tooltips' => $this->get_tooltips(),
             'version' => SERWIS_NATU_VERSION,
         );
-        
+
         // Make sure we localize the script after enqueuing it
         wp_localize_script('serwis-natu-script', 'serwisNatuData', $form_data);
-        
+
         // Start output buffering
         ob_start();
-        
+
         // Include the form template
         include SERWIS_NATU_PATH . 'templates/form-container.php';
-        
+
         // Return the buffered content
         return ob_get_clean();
     }
-    
+
     /**
      * Get tooltips for form fields
      *
      * @return array Array of tooltips
      */
-    private function get_tooltips() {
+    private function get_tooltips()
+    {
         return array(
             'jednorazowa_usluga' => __('Jednorazowa usługa serwisowa bez zobowiązań', 'serwis-natu'),
             'pakiet_wielorazowy' => __('Pakiet z regularnymi wizytami serwisowymi', 'serwis-natu'),
@@ -229,4 +243,58 @@ class Serwis_Natu {
             // Dodaj więcej tooltipów według potrzeb
         );
     }
+}
+
+
+
+
+add_action('wp_ajax_submit_order', 'handle_submit_order');
+add_action('wp_ajax_nopriv_submit_order', 'handle_submit_order');
+
+function handle_submit_order()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'serwis_natu_orders'; // replace with your table
+
+    if (!isset($_POST['form_data'])) {
+        wp_send_json_error('No data received');
+    }
+
+    $data = json_decode(stripslashes($_POST['form_data']), true);
+
+    if (!$data) {
+        wp_send_json_error('Invalid JSON');
+    }
+
+    // Merge aquariums and extra_services already done in JS
+    $aquariums_json = maybe_serialize($data['akw']); // store as LONGTEXT (JSON)
+
+    $wpdb->insert(
+        $table_name,
+        array(
+            'client_first_name' => sanitize_text_field($data['client_first_name']),
+            'client_last_name'  => sanitize_text_field($data['client_last_name']),
+            'client_email'      => sanitize_email($data['client_email']),
+            'client_phone'      => sanitize_text_field($data['client_phone']),
+            'aquarium_address'  => sanitize_text_field($data['aquarium_address']),
+            'preferred_date'    => date('Y-m-d H:i:s', strtotime($data['preferred_date'])),
+            'additional_notes'  => sanitize_textarea_field($data['additional_notes']),
+            'aquariums'         => wp_json_encode($data['akw']),
+            'total_price'       => 0 // calculate if needed
+        ),
+        array(
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%f'
+        )
+    );
+
+    wp_send_json_success('Order saved successfully!');
 }

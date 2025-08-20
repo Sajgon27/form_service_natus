@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Serwis Natu
  * Plugin URI: https://natuscape.pl
@@ -22,8 +23,39 @@ define('SERWIS_NATU_VERSION', '1.0.0');
 require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu.php';
 
 // Initialize the plugin
-function serwis_natu_init() {
+function serwis_natu_init()
+{
     $plugin = new Serwis_Natu();
     $plugin->init();
 }
 add_action('plugins_loaded', 'serwis_natu_init');
+
+
+register_activation_hook(__FILE__, 'serwis_natu_create_orders_table');
+
+function serwis_natu_create_orders_table()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . "serwis_natu_orders"; // wp_serwis_natu_orders
+    $charset_collate = $wpdb->get_charset_collate();
+
+    // SQL to create the table
+    $sql = "CREATE TABLE $table_name (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    client_first_name VARCHAR(100) NOT NULL,
+    client_last_name VARCHAR(100) NOT NULL,
+    client_email VARCHAR(150) NOT NULL,
+    client_phone VARCHAR(50) NOT NULL,
+    aquarium_address VARCHAR(255) NOT NULL,
+    preferred_date DATETIME NOT NULL,
+    additional_notes TEXT NULL,
+    aquariums LONGTEXT NULL,         -- JSON {1: {details, extra_services: []}, 2: {...}}
+    total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
