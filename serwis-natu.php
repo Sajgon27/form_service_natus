@@ -52,6 +52,7 @@ function serwis_natu_create_orders_table()
     additional_notes TEXT NULL,
     aquariums LONGTEXT NULL,         -- JSON {1: {details, extra_services: []}, 2: {...}}
     total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
+    cooperative_mode VARCHAR(100) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) $charset_collate;";

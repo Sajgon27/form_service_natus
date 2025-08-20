@@ -551,6 +551,16 @@ $("#submit-form").click(function (e) {
   if (validateStep4()) {
     const form = document.getElementById("serwis-natu-form");
     let data = formDataToNestedObject(form);
+    
+    // Get the total cost value from the final-cost-total-value element
+    const totalCostElement = document.querySelector('.final-cost-total-value');
+    if (totalCostElement) {
+      // Extract the value and remove the currency symbol (zł) and convert to float
+      const totalCostText = totalCostElement.textContent.trim();
+      const totalCost = parseFloat(totalCostText.replace('zł', '').trim());
+      // Add to form data
+      data.total_cost = totalCost;
+    }
 
     // Merge extra_services into akw
     for (let akwId in data.akw) {
@@ -565,15 +575,28 @@ $("#submit-form").click(function (e) {
     delete data.extra_services;
 
     console.log(data);
-     let ajaxurl = 'http://natudev.local/wp-admin/admin-ajax.php';
-    // Send to PHP via AJAX
+    
+    // Create FormData for file uploads
+    const formData = new FormData();
+    formData.append('action', 'submit_order');
+    formData.append('form_data', JSON.stringify(data));
+    
+    // Add all file inputs to FormData
+    const fileInputs = document.querySelectorAll('input[type="file"].file-upload');
+    fileInputs.forEach(input => {
+      if (input.files && input.files[0]) {
+        formData.append(input.name, input.files[0]);
+      }
+    });
+    
+    let ajaxurl = '/wp-admin/admin-ajax.php';
+    // Send to PHP via AJAX with FormData
     $.ajax({
-      url: ajaxurl, // WordPress AJAX endpoint
+      url: ajaxurl,
       method: 'POST',
-      data: {
-        action: 'submit_order',
-        form_data: JSON.stringify(data)
-      },
+      data: formData,
+      processData: false,  // Prevent jQuery from processing the data
+      contentType: false,  // Let the browser set the content type for FormData
       success: function (response) {
         console.log(response);
         alert("Zgłoszenie wysłane pomyślnie!");
@@ -584,6 +607,7 @@ $("#submit-form").click(function (e) {
         alert("Błąd podczas wysyłania zgłoszenia.");
       }
     });
+    
   }
 });
 
@@ -1613,7 +1637,7 @@ $("#submit-form").click(function (e) {
     $container.append(`
             <div class="final-cost-total">
                 <span>Razem:</span>
-                <span>${totalCost.toFixed(2)} zł</span>
+                <span class="final-cost-total-value">${totalCost.toFixed(2)} zł</span>
             </div>
         `);
   }

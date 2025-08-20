@@ -88,7 +88,7 @@ border: 1px solid #ddd;
 /* Aquarium photo */
 .aquarium-photo-summary {
     margin-top: 15px;
-    text-align: center;
+    text-align: left;
 }
 
 .aquarium-photo-summary img {
