@@ -4,48 +4,38 @@
 
 /* Summary sections */
 .aquariums-summary, 
-.contact-summary, 
-.final-cost-summary {
+.contact-summary {
     margin-bottom: 20px;
 }
 
 /* Aquarium card */
 .aquarium-summary-card {
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
+border: 1px solid #ddd;
     border-radius: 5px;
+    padding: 15px;
     margin-bottom: 20px;
     overflow: hidden;
 }
 
-.aquarium-summary-header {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 15px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-}
 
-.aquarium-summary-body {
-    padding: 15px;
-}
+
 
 /* Package section */
 .package-summary {
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 15px;
     margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
 
-.package-summary-name {
-    font-weight: bold;
-    color: #333;
-}
+
 
 .package-summary-price {
-    font-weight: bold;
-    color: #4CAF50;
+   
+   
     float: right;
 }
 
@@ -67,6 +57,9 @@
     padding: 4px 0;
     display: flex;
     align-items: flex-start;
+    font-size: 16px;
+    color: #666;
+   
 }
 
 .options-list li:before {
@@ -81,6 +74,9 @@
     margin-top: 15px;
     padding-top: 15px;
     border-top: 1px solid #e0e0e0;
+}
+.extra-services-header {
+    margin-top: 20px !important;
 }
 
 .extra-service-summary-item {
@@ -115,60 +111,80 @@
 }
 
 .contact-summary-label {
-    font-weight: bold;
-    color: #555;
-    display: block;
-    margin-bottom: 3px;
+    margin-bottom: 0 !important;
 }
 
+
 .contact-summary-value {
-    color: #333;
+    font-size: 16px;
+    color: #666;
+    
 }
 
 /* Final cost summary */
 .final-cost-summary {
-    background-color: #f5f5f5;
-    padding: 15px;
-    border-radius: 5px;
+   
+   
+}
+
+.package-summary-name {
+    margin: 0 !important;
+}
+
+.extra-service-summary-item-name {
+   
+    display: flex;
+    align-items: flex-start;
+    font-size: 16px;
+    color: #666;
 }
 
 .final-cost-item {
     display: flex;
     justify-content: space-between;
     padding: 5px 0;
-    border-bottom: 1px dashed #e0e0e0;
+  
+}
+
+.final-cost-item span {
+    font-size: 16px;
+    color: #666;
+
 }
 
 .final-cost-total {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+
     margin-top: 10px;
-    font-weight: bold;
-    border-top: 2px solid #4CAF50;
-    font-size: 1.2em;
+    font-weight: 600;
+
+    font-size: 20px;
 }
 
 .cost-disclaimer {
-    font-style: italic;
+    font-size: 16px;
     color: #666;
-    font-size: 0.9em;
-    margin-top: 10px;
+    margin-bottom: 30px;
+    font-weight: 600;
+    margin-top: 4px;
 }
 
 /* Preparation instructions */
 .preparation-instructions {
-    padding-left: 20px;
+    padding-left: 35px;
 }
 
 .preparation-instructions li {
     margin-bottom: 8px;
+    font-size: 16px;
+    color: #666;
+ 
 }
 
 /* Terms section */
 .terms-section {
-    background-color: #f9f9f9;
-    padding: 15px;
+   
     border-radius: 5px;
     margin-top: 30px;
     margin-bottom: 30px;

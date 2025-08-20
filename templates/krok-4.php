@@ -14,6 +14,14 @@ defined('ABSPATH') || exit;
         <?php _e('Sprawdź poprawność danych przed zamówieniem usługi.', 'serwis-natu'); ?>
     </p>
 
+        <!-- Contact information section -->
+    <div class="form-section">
+        <h3><?php _e('Dane kontaktowe', 'serwis-natu'); ?></h3>
+        <div id="contact-summary" class="contact-summary">
+            <!-- Will be populated by JavaScript -->
+        </div>
+    </div>
+
     <!-- Aquariums summary section -->
     <div class="form-section">
         <h3><?php _e('Podsumowanie akwariów', 'serwis-natu'); ?></h3>
@@ -26,13 +34,7 @@ defined('ABSPATH') || exit;
         </div>
     </div>
 
-    <!-- Contact information section -->
-    <div class="form-section">
-        <h3><?php _e('Dane kontaktowe', 'serwis-natu'); ?></h3>
-        <div id="contact-summary" class="contact-summary">
-            <!-- Will be populated by JavaScript -->
-        </div>
-    </div>
+
 
     <!-- Cost summary section -->
     <div class="form-section">
@@ -91,7 +93,7 @@ defined('ABSPATH') || exit;
     </div>
     
     <div class="form-navigation">
-        <button type="button" id="prev-step-4" class="prev-step"><?php _e('Wróć', 'serwis-natu'); ?></button>
-        <button type="button" id="submit-form" class="submit-form"><?php _e('Zamów usługę', 'serwis-natu'); ?></button>
+        <button type="button" id="prev-step-4" class="prev-step sa-button"><?php _e('Wróć', 'serwis-natu'); ?></button>
+        <button type="button" id="submit-form" class="submit-form next-step sa-button"><?php _e('Zamów usługę', 'serwis-natu'); ?></button>
     </div>
 </div>

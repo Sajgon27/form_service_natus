@@ -40,6 +40,7 @@
     setupFileUploadFields();
     setupStepNavigation();
     setupRecommendedProducts();
+    setupTankTypeSelection();
   }
 
   /**
@@ -170,6 +171,9 @@
 
     // Re-initialize service mode to ensure correct visibility
     updateServiceModeVisibility();
+    
+    // Apply tank type restrictions to new sections
+    applyTankTypeRestrictions();
 
     // Add animation class to new sections
     $container.find(".akwarium-section").addClass("new-section");
@@ -304,6 +308,53 @@
       // Enable all checkboxes
       $('.akwarium-section input[type="checkbox"]').prop("disabled", false);
     }
+  }
+
+  /**
+   * Setup tank type selection - only one type can be selected per aquarium
+   */
+  function setupTankTypeSelection() {
+    // Initial setup for existing aquariums
+    applyTankTypeRestrictions();
+    
+    // Handle when new checkboxes are added (when adding new aquariums)
+    $(document).on("click", '.akwarium-section input[name^="akw"][name$="[typ][]"]', function() {
+      const $clickedCheckbox = $(this);
+      const aquariumId = $clickedCheckbox.closest('.akwarium-section').attr('id');
+      
+      if ($clickedCheckbox.prop('checked')) {
+        // Disable all other type checkboxes in this aquarium section
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($clickedCheckbox).prop('checked', false);
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($clickedCheckbox).prop('disabled', true);
+        
+        // Add disabled-checkbox class for styling
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($clickedCheckbox).closest('.checkbox-option').addClass('disabled-checkbox');
+      } else {
+        // If unchecked, enable all type checkboxes in this aquarium section
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).prop('disabled', false);
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).closest('.checkbox-option').removeClass('disabled-checkbox');
+      }
+    });
+  }
+  
+  /**
+   * Apply tank type selection restrictions to all aquarium sections
+   */
+  function applyTankTypeRestrictions() {
+    $('.akwarium-section').each(function() {
+      const $aquarium = $(this);
+      const aquariumId = $aquarium.attr('id');
+      
+      // Check if any tank type is already selected
+      const $selectedType = $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]:checked`);
+      
+      if ($selectedType.length > 0) {
+        // Disable all other type checkboxes in this aquarium section
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($selectedType).prop('checked', false);
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($selectedType).prop('disabled', true);
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($selectedType).closest('.checkbox-option').addClass('disabled-checkbox');
+      }
+    });
   }
 
   /**
@@ -525,11 +576,12 @@ $("#submit-form").click(function (e) {
       },
       success: function (response) {
         console.log(response);
-        alert("Order submitted successfully!");
+        alert("Zgłoszenie wysłane pomyślnie!");
+        location.reload();
       },
       error: function (err) {
         console.error(err);
-        alert("Error submitting order.");
+        alert("Błąd podczas wysyłania zgłoszenia.");
       }
     });
   }
@@ -551,14 +603,14 @@ $("#submit-form").click(function (e) {
     $("#step-" + stepNumber).addClass("active");
 
     // Update progress bar
-    $(".progress-step").removeClass("active completed");
+    $(".sa-progress-item").removeClass("active completed");
 
     // Mark current step as active
-    $('.progress-step[data-step="' + stepNumber + '"]').addClass("active");
+    $('.sa-progress-item[data-step="' + stepNumber + '"]').addClass("active");
 
     // Mark previous steps as completed
     for (let i = 1; i < stepNumber; i++) {
-      $('.progress-step[data-step="' + i + '"]').addClass("completed");
+      $('.sa-progress-item[data-step="' + i + '"]').addClass("completed");
     }
 
     // Scroll to top of form
@@ -927,10 +979,10 @@ $("#submit-form").click(function (e) {
       const $recommendation = $(`
                 <div class="package-recommendation" data-aquarium="${recommendation.aquariumIndex}" data-package="${recommendation.packageKey}">
                     <div class="package-header">
-                        <span class="package-name">Akwarium ${recommendation.aquariumIndex} - ${recommendation.packageName}</span>
-                        <span class="package-price">${recommendation.packagePrice} zł</span>
+                        <h3 class="package-name">Akwarium ${recommendation.aquariumIndex} - ${recommendation.packageName}</h3>
+                       
                     </div>
-                    <div class="package-description">
+                    <div class="section-description">
                         ${recommendation.packageDescription}
                     </div>
                 </div>
@@ -970,9 +1022,7 @@ $("#submit-form").click(function (e) {
                                 <span class="extra-service-name">${
                                   service.name
                                 }</span>
-                                <span class="extra-service-price">${
-                                  service.price
-                                } zł</span>
+                                
                             </label>
                             ${
                               service.description
@@ -1220,9 +1270,9 @@ $("#submit-form").click(function (e) {
     // Add table header
     $thead.append(`
             <tr>
-                <th>Zdjęcie</th>
-                <th>Nazwa produktu</th>
-                <th>Cena</th>
+                <th><h3>Zdjęcie</h3></th>
+                <th><h3>Nazwa produktu</h3></th>
+                <th><h3>Cena</h3></th>
             </tr>
         `);
 
@@ -1257,7 +1307,7 @@ $("#submit-form").click(function (e) {
 
     // Add a helpful message
     $productsList.append(
-      '<p class="products-note">Powyższe produkty są rekomendowane na podstawie wybranych opcji formularza.</p>'
+      '<p class="section-description">Powyższe produkty są rekomendowane na podstawie wybranych opcji formularza.</p>'
     );
   }
 
@@ -1333,12 +1383,8 @@ $("#submit-form").click(function (e) {
       // Add header
       $card.append(`
                 <div class="aquarium-summary-header">
-                    <span>Akwarium ${i}</span>
-                    ${
-                      recommendation.packagePrice
-                        ? `<span>${recommendation.packagePrice} zł</span>`
-                        : ""
-                    }
+                    <h3>Akwarium ${i}</h3>
+                    
                 </div>
             `);
 
@@ -1349,9 +1395,9 @@ $("#submit-form").click(function (e) {
       if (recommendation.packageName) {
         $body.append(`
                     <div class="package-summary">
-                        <span class="package-summary-name">Wybrany pakiet: ${recommendation.packageName}</span>
+                        <h4 class="package-summary-name">Wybrany pakiet: ${recommendation.packageName}</h4>
                         <span class="package-summary-price">${recommendation.packagePrice} zł</span>
-                        <div style="clear: both;"></div>
+                       
                     </div>
                 `);
       }
@@ -1418,7 +1464,7 @@ $("#submit-form").click(function (e) {
         extraServices.forEach(function (service) {
           $extraServicesSummary.append(`
                         <div class="extra-service-summary-item">
-                            <span>${service.name}</span>
+                            <span class="extra-service-summary-item-name">${service.name}</span>
                             <span>${service.price} zł</span>
                         </div>
                     `);
@@ -1503,7 +1549,7 @@ $("#submit-form").click(function (e) {
       if (value && value !== "-") {
         const $item = $(`
                     <div class="contact-summary-item">
-                        <span class="contact-summary-label">${label}:</span>
+                        <h4 class="contact-summary-label">${label}:</h4>
                         <span class="contact-summary-value">${value}</span>
                     </div>
                 `);
@@ -1566,7 +1612,7 @@ $("#submit-form").click(function (e) {
     // Add total
     $container.append(`
             <div class="final-cost-total">
-                <span>RAZEM:</span>
+                <span>Razem:</span>
                 <span>${totalCost.toFixed(2)} zł</span>
             </div>
         `);

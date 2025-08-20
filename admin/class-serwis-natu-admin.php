@@ -100,7 +100,7 @@ class Serwis_Natu_Admin {
             __('Ustawienia Serwis Natu', 'serwis-natu'),
             __('Serwis Natu', 'serwis-natu'),
             'manage_options',
-            $this->page_slug,
+            'serwis-natu-settings',
             array($this, 'render_settings_page'),
             'dashicons-admin-settings',
             100

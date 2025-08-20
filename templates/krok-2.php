@@ -45,14 +45,15 @@ defined('ABSPATH') || exit;
     <!-- Adres i lokalizacja -->
     <div class="form-section">
         <h3><?php _e('Adres i lokalizacja akwarium', 'serwis-natu'); ?></h3>
-        <div class="form-row">
+        
+        <div class="form-row two-columns">
             <div class="form-field">
                 <label for="aquarium_address"><?php _e('Adres', 'serwis-natu'); ?><span class="required">*</span></label>
                 <input type="text" id="aquarium_address" name="aquarium_address" required>
             </div>
-        </div>
+      
         
-        <div class="form-row">
+       
             <div class="form-field">
                 <label for="preferred_date"><?php _e('Preferowany termin', 'serwis-natu'); ?><span class="required">*</span></label>
                 <input type="datetime-local" id="preferred_date" name="preferred_date" required>
@@ -84,7 +85,7 @@ defined('ABSPATH') || exit;
         <h3><?php _e('Dodatkowe uwagi (opcjonalne)', 'serwis-natu'); ?></h3>
         <div class="form-row">
             <div class="form-field">
-                <label for="additional_notes"><?php _e('Uwagi', 'serwis-natu'); ?></label>
+               
                 <textarea id="additional_notes" name="additional_notes" rows="4"></textarea>
             </div>
         </div>
@@ -95,7 +96,7 @@ defined('ABSPATH') || exit;
     </div>
     
     <div class="form-navigation">
-        <button type="button" id="prev-step-2" class="prev-step"><?php _e('Wstecz', 'serwis-natu'); ?></button>
-        <button type="button" id="next-step-2" class="next-step"><?php _e('Przejdź dalej', 'serwis-natu'); ?></button>
+        <button type="button" id="prev-step-2" class="prev-step sa-button"><?php _e('Wstecz', 'serwis-natu'); ?></button>
+        <button type="button" id="next-step-2" class="next-step sa-button"><?php _e('Przejdź dalej', 'serwis-natu'); ?></button>
     </div>
 </div>

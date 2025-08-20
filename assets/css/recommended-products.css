@@ -35,19 +35,17 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+   
 }
 
 .recommended-products-table th,
 .recommended-products-table td {
-    padding: 12px;
+ 
     text-align: left;
-    border-bottom: 1px solid #e0e0e0;
+   
 }
 
 .recommended-products-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
     color: #333;
 }
 
@@ -56,12 +54,13 @@
 }
 
 .recommended-products-table tr:hover {
-    background-color: #f9f9f9;
+   
 }
 
 .recommended-products-table img {
-    max-width: 60px;
-    height: auto;
+    max-width: 100px;
+    height: 100px;
+    object-fit: cover;
     display: block;
 }
 
@@ -90,29 +89,11 @@
     border-radius: 4px;
 }
 
-/* Note under products table */
-.products-note {
-    margin-top: 15px;
-    font-size: 0.9em;
-    color: #666;
-    font-style: italic;
-}
 
-/* Extra services styles */
-.extra-services-container {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-top: 1px solid #eee;
-    border-radius: 0 0 4px 4px;
-}
 
-.extra-services-header {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-size: 1em;
-    color: #555;
-}
+
+
+
 
 .extra-services-list {
     display: grid;
@@ -120,29 +101,9 @@
     gap: 10px;
 }
 
-.extra-service-item {
-    padding: 8px;
-    border: 1px solid #eaeaea;
-    border-radius: 4px;
-    background-color: #fff;
-    transition: background-color 0.2s ease;
-}
 
-.extra-service-item:hover {
-    background-color: #f5f5f5;
-}
 
-.extra-service-item label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin-bottom: 0;
-}
 
-.extra-service-name {
-    flex-grow: 1;
-    margin-left: 8px;
-}
 
 .extra-service-price {
     font-weight: bold;
@@ -191,4 +152,81 @@
     .recommended-products-table td:last-child {
         padding-right: 5px;
     }
+}
+
+
+
+
+
+
+.extra-services-title {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+
+
+.extra-service-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+
+
+
+.extra-service-tooltip {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-color: #999;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 11px;
+    margin-left: 5px;
+    cursor: help;
+    position: relative;
+}
+
+.extra-service-tooltip:hover {
+    background-color: #666;
+}
+
+.extra-service-tooltip .tooltip-content {
+    min-width: 180px;
+    max-width: 250px;
+}
+
+.extra-service-price {
+    font-size: 14px;
+    color: #4CAF50;
+    font-weight: 500;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+
+
+/* Restart aquarium checkbox styling */
+.restart-checkbox:checked {
+    accent-color: #ff5722;
+}
+
+.restart-checkbox:checked + label {
+    color: #ff5722;
+    font-weight: bold;
+}
+
+/* Animation for newly added items */
+@keyframes highlightNew {
+    from { background-color: #fffde7; }
+    to { background-color: transparent; }
+}
+
+.extra-service-item.new-item {
+    animation: highlightNew 1.5s ease-out;
 }

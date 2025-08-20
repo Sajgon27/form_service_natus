@@ -155,13 +155,7 @@ class Serwis_Natu
             SERWIS_NATU_VERSION
         );
 
-        // Register Extra Services CSS
-        wp_register_style(
-            'serwis-natu-extra-services',
-            SERWIS_NATU_URL . 'assets/css/extra-services.css',
-            array('serwis-natu-style'),
-            SERWIS_NATU_VERSION
-        );
+   
 
         // Register Recommended Products CSS
         wp_register_style(
