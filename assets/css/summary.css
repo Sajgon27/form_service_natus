@@ -1,0 +1,182 @@
+/**
+ * Summary step styles
+ */
+
+/* Summary sections */
+.aquariums-summary, 
+.contact-summary, 
+.final-cost-summary {
+    margin-bottom: 20px;
+}
+
+/* Aquarium card */
+.aquarium-summary-card {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.aquarium-summary-header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+}
+
+.aquarium-summary-body {
+    padding: 15px;
+}
+
+/* Package section */
+.package-summary {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.package-summary-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.package-summary-price {
+    font-weight: bold;
+    color: #4CAF50;
+    float: right;
+}
+
+/* Options list */
+.options-summary h4 {
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1em;
+    color: #555;
+}
+
+.options-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.options-list li {
+    padding: 4px 0;
+    display: flex;
+    align-items: flex-start;
+}
+
+.options-list li:before {
+    content: "✓";
+    color: #4CAF50;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+/* Extra services summary */
+.extra-services-summary {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.extra-service-summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+/* Aquarium photo */
+.aquarium-photo-summary {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.aquarium-photo-summary img {
+    max-width: 100%;
+    height: auto;
+    max-height: 150px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+/* Contact information */
+.contact-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.contact-summary-item {
+    margin-bottom: 10px;
+}
+
+.contact-summary-label {
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.contact-summary-value {
+    color: #333;
+}
+
+/* Final cost summary */
+.final-cost-summary {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.final-cost-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.final-cost-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    margin-top: 10px;
+    font-weight: bold;
+    border-top: 2px solid #4CAF50;
+    font-size: 1.2em;
+}
+
+.cost-disclaimer {
+    font-style: italic;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+/* Preparation instructions */
+.preparation-instructions {
+    padding-left: 20px;
+}
+
+.preparation-instructions li {
+    margin-bottom: 8px;
+}
+
+/* Terms section */
+.terms-section {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .contact-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

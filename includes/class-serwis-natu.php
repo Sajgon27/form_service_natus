@@ -159,6 +159,14 @@ class Serwis_Natu {
             SERWIS_NATU_VERSION
         );
         
+        // Register Summary CSS
+        wp_register_style(
+            'serwis-natu-summary', 
+            SERWIS_NATU_URL . 'assets/css/summary.css', 
+            array('serwis-natu-style'), 
+            SERWIS_NATU_VERSION
+        );
+        
         // Register JS
         wp_register_script(
             'serwis-natu-script', 
@@ -180,6 +188,7 @@ class Serwis_Natu {
         wp_enqueue_style('serwis-natu-style');
         wp_enqueue_style('serwis-natu-extra-services');
         wp_enqueue_style('serwis-natu-recommended-products');
+        wp_enqueue_style('serwis-natu-summary');
         wp_enqueue_script('serwis-natu-script');
         
         // Initialize form data for JavaScript

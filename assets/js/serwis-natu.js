@@ -419,6 +419,8 @@
         
         $('#next-step-3').click(function(e) {
             e.preventDefault();
+            // Generate summary before showing step 4
+            generateFormSummary();
             goToStep(4);
         });
         
@@ -430,9 +432,12 @@
         
         // Submit form
         $('#submit-form').click(function(e) {
-            // This will be implemented later
-            // Will submit the form when step 4 is implemented
-            console.log('Form submitted');
+            e.preventDefault();
+            // Validate that required checkboxes are checked
+            if (validateStep4()) {
+                console.log('Form submitted - ready to implement order processing');
+                // Order processing will be implemented in the next message
+            }
         });
     }
     
@@ -1110,5 +1115,367 @@
         $productsList.html(`<div class="no-products-message">${message}</div>`).show();
         
         console.log('Displaying no products message:', message);
+    }
+    
+    /**
+     * Generate complete form summary for step 4
+     */
+    function generateFormSummary() {
+        // Generate aquariums summary
+        generateAquariumsSummary();
+        
+        // Generate contact information summary
+        generateContactSummary();
+        
+        // Generate final cost summary
+        generateFinalCostSummary();
+    }
+    
+    /**
+     * Generate summary of all aquariums
+     */
+    function generateAquariumsSummary() {
+        const $container = $('#aquariums-summary');
+        $container.html(''); // Clear container
+        
+        // Get form data
+        const formData = getFormData();
+        
+        // Get recommendations
+        const recommendations = window.serwisNatuRecommendations || [];
+        
+        // Determine number of aquariums
+        let aquariumCount = 1;
+        if (formData.ilosc_akwarium === '1') {
+            aquariumCount = 1;
+        } else if (formData.ilosc_akwarium === '2') {
+            aquariumCount = 2;
+        } else if (formData.ilosc_akwarium === 'wiecej') {
+            aquariumCount = parseInt(formData.ilosc_wiecej) || 3;
+        }
+        
+        // For each aquarium create a summary card
+        for (let i = 1; i <= aquariumCount; i++) {
+            const aquariumData = formData.akw[i] || {};
+            
+            // Get recommendation for this aquarium
+            const recommendation = recommendations.find(rec => rec.aquariumIndex === i) || {};
+            
+            // Create aquarium summary card
+            const $card = $('<div class="aquarium-summary-card"></div>');
+            
+            // Add header
+            $card.append(`
+                <div class="aquarium-summary-header">
+                    <span>Akwarium ${i}</span>
+                    ${recommendation.packagePrice ? `<span>${recommendation.packagePrice} zł</span>` : ''}
+                </div>
+            `);
+            
+            // Create body container
+            const $body = $('<div class="aquarium-summary-body"></div>');
+            
+            // Add package info if available
+            if (recommendation.packageName) {
+                $body.append(`
+                    <div class="package-summary">
+                        <span class="package-summary-name">Wybrany pakiet: ${recommendation.packageName}</span>
+                        <span class="package-summary-price">${recommendation.packagePrice} zł</span>
+                        <div style="clear: both;"></div>
+                    </div>
+                `);
+            }
+            
+            // Add options summary
+            const $optionsSummary = $('<div class="options-summary"></div>');
+            
+            // Add options from each category if available
+            if (aquariumData.typ && aquariumData.typ.length > 0) {
+                $optionsSummary.append('<h4>Typ akwarium:</h4>');
+                const $typeList = $('<ul class="options-list"></ul>');
+                
+                aquariumData.typ.forEach(function(type) {
+                    $typeList.append(`<li>${getLabelForOption(type)}</li>`);
+                });
+                
+                $optionsSummary.append($typeList);
+            }
+            
+            if (aquariumData.cel && aquariumData.cel.length > 0) {
+                $optionsSummary.append('<h4>Cel serwisu:</h4>');
+                const $goalList = $('<ul class="options-list"></ul>');
+                
+                aquariumData.cel.forEach(function(goal) {
+                    $goalList.append(`<li>${getLabelForOption(goal)}</li>`);
+                });
+                
+                $optionsSummary.append($goalList);
+            }
+            
+            if (aquariumData.zakres && aquariumData.zakres.length > 0) {
+                $optionsSummary.append('<h4>Zakres serwisu:</h4>');
+                const $scopeList = $('<ul class="options-list"></ul>');
+                
+                aquariumData.zakres.forEach(function(scope) {
+                    $scopeList.append(`<li>${getLabelForOption(scope)}</li>`);
+                });
+                
+                $optionsSummary.append($scopeList);
+            }
+            
+            if (aquariumData.inne && aquariumData.inne.length > 0) {
+                $optionsSummary.append('<h4>Inne potrzeby:</h4>');
+                const $otherList = $('<ul class="options-list"></ul>');
+                
+                aquariumData.inne.forEach(function(other) {
+                    $otherList.append(`<li>${getLabelForOption(other)}</li>`);
+                });
+                
+                $optionsSummary.append($otherList);
+            }
+            
+            $body.append($optionsSummary);
+            
+            // Get extra services for this aquarium if any
+            const extraServices = getSelectedExtraServices(i);
+            
+            if (extraServices.length > 0) {
+                const $extraServicesSummary = $('<div class="extra-services-summary"></div>');
+                $extraServicesSummary.append('<h4>Dodatkowe usługi:</h4>');
+                
+                extraServices.forEach(function(service) {
+                    $extraServicesSummary.append(`
+                        <div class="extra-service-summary-item">
+                            <span>${service.name}</span>
+                            <span>${service.price} zł</span>
+                        </div>
+                    `);
+                });
+                
+                $body.append($extraServicesSummary);
+            }
+            
+            // Add photo if available
+            const photoInput = document.getElementById(`aquarium_photo_${i}`);
+            if (photoInput && photoInput.files && photoInput.files[0]) {
+                const $photoSummary = $('<div class="aquarium-photo-summary"></div>');
+                $photoSummary.append('<h4>Zdjęcie akwarium:</h4>');
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $photoSummary.append(`<img src="${e.target.result}" alt="Zdjęcie akwarium ${i}">`);
+                };
+                
+                reader.readAsDataURL(photoInput.files[0]);
+                $body.append($photoSummary);
+            }
+            
+            $card.append($body);
+            $container.append($card);
+        }
+    }
+    
+    /**
+     * Get selected extra services for an aquarium
+     * 
+     * @param {number} aquariumIndex Aquarium index
+     * @return {array} Array of selected extra services
+     */
+    function getSelectedExtraServices(aquariumIndex) {
+        const services = [];
+        
+        $(`.package-recommendation[data-aquarium="${aquariumIndex}"] .extra-service-checkbox:checked`).each(function() {
+            const $checkbox = $(this);
+            const name = $checkbox.siblings('.extra-service-name').text();
+            const price = parseFloat($checkbox.data('price'));
+            
+            services.push({
+                name: name,
+                price: price
+            });
+        });
+        
+        return services;
+    }
+    
+    /**
+     * Generate contact information summary
+     */
+    function generateContactSummary() {
+        const $container = $('#contact-summary');
+        $container.html(''); // Clear container
+        
+        // Create grid for contact information
+        const $grid = $('<div class="contact-summary-grid"></div>');
+        
+        // Get contact field values
+        const contactFields = {
+            'client_first_name': 'Imię',
+            'client_last_name': 'Nazwisko',
+            'client_email': 'Email',
+            'client_phone': 'Telefon',
+            'aquarium_address': 'Adres akwarium',
+            'preferred_date': 'Preferowana data wizyty',
+            'alternative_date': 'Alternatywna data',
+            'client_comments': 'Dodatkowe uwagi'
+        };
+        
+        // Add each contact field
+        for (const [id, label] of Object.entries(contactFields)) {
+            const value = $('#' + id).val() || '-';
+            
+            if (value && value !== '-') {
+                const $item = $(`
+                    <div class="contact-summary-item">
+                        <span class="contact-summary-label">${label}:</span>
+                        <span class="contact-summary-value">${value}</span>
+                    </div>
+                `);
+                
+                $grid.append($item);
+            }
+        }
+        
+        $container.append($grid);
+    }
+    
+    /**
+     * Generate final cost summary
+     */
+    function generateFinalCostSummary() {
+        const $container = $('#final-cost-summary');
+        $container.html(''); // Clear container
+        
+        const recommendations = window.serwisNatuRecommendations || [];
+        
+        // Calculate total cost
+        let totalCost = 0;
+        const costItems = [];
+        
+        // Add package costs
+        recommendations.forEach(function(recommendation) {
+            costItems.push({
+                label: `Akwarium ${recommendation.aquariumIndex} - ${recommendation.packageName}`,
+                price: parseFloat(recommendation.packagePrice)
+            });
+            
+            totalCost += parseFloat(recommendation.packagePrice);
+        });
+        
+        // Add extra services costs for each aquarium
+        recommendations.forEach(function(recommendation) {
+            const aquariumIndex = recommendation.aquariumIndex;
+            const extraServices = getSelectedExtraServices(aquariumIndex);
+            
+            extraServices.forEach(function(service) {
+                costItems.push({
+                    label: `Akwarium ${aquariumIndex} - ${service.name} (usługa dodatkowa)`,
+                    price: service.price
+                });
+                
+                totalCost += service.price;
+            });
+        });
+        
+        // Build HTML
+        costItems.forEach(function(item) {
+            $container.append(`
+                <div class="final-cost-item">
+                    <span>${item.label}</span>
+                    <span>${item.price.toFixed(2)} zł</span>
+                </div>
+            `);
+        });
+        
+        // Add total
+        $container.append(`
+            <div class="final-cost-total">
+                <span>RAZEM:</span>
+                <span>${totalCost.toFixed(2)} zł</span>
+            </div>
+        `);
+    }
+    
+    /**
+     * Get human-readable label for option value
+     * 
+     * @param {string} optionValue Option value
+     * @return {string} Human-readable label
+     */
+    function getLabelForOption(optionValue) {
+        // Get option label from form
+        const $option = $(`input[value="${optionValue}"]`);
+        if ($option.length) {
+            const $label = $option.parent('label');
+            if ($label.length) {
+                // Remove tooltip if present
+                let labelText = $label.clone()
+                    .find('.tooltip-icon, .tooltip-content')
+                    .remove()
+                    .end()
+                    .text().trim();
+                
+                return labelText;
+            }
+        }
+        
+        // Fallback to predefined labels if not found in DOM
+        const labels = {
+            'lowtech': 'Low-tech (bez CO2)',
+            'hightech': 'High-tech (z CO2)',
+            'biotopowy': 'Biotopowe',
+            'slodkowodne': 'Słodkowodne',
+            'morskie': 'Morskie',
+            'ukwiecone': 'Ukwiecone',
+            'techniczne': 'Techniczne',
+            'naturalne': 'Naturalne',
+            'tylko_glony': 'Tylko glony',
+            'czyszczenie_filtrow': 'Czyszczenie filtrów',
+            'ustawianie_parametrow': 'Ustawianie parametrów',
+            'podmiana_wody': 'Podmiana wody',
+            'przycinanie_roslin': 'Przycinanie roślin',
+            'usuwanie_glonow': 'Usuwanie glonów',
+            'kalibracja_osmoza': 'Kalibracja osmozy',
+            'nawozenie': 'Nawożenie',
+            'korekta_co2': 'Korekta CO2',
+            'analiza_wody': 'Analiza wody'
+        };
+        
+        return labels[optionValue] || optionValue;
+    }
+    
+    /**
+     * Validate step 4 (required checkboxes)
+     * 
+     * @return {boolean} Whether the validation passed
+     */
+    function validateStep4() {
+        const $errorMessage = $('#step4-error');
+        let isValid = true;
+        
+        // Check privacy policy acceptance
+        if (!$('#privacy_policy').prop('checked')) {
+            isValid = false;
+            $('#privacy_policy').addClass('error');
+        } else {
+            $('#privacy_policy').removeClass('error');
+        }
+        
+        // Check terms and conditions acceptance
+        if (!$('#terms_conditions').prop('checked')) {
+            isValid = false;
+            $('#terms_conditions').addClass('error');
+        } else {
+            $('#terms_conditions').removeClass('error');
+        }
+        
+        // Display error message if validation failed
+        if (!isValid && $errorMessage.length) {
+            $errorMessage.slideDown(200);
+        } else if ($errorMessage.length) {
+            $errorMessage.slideUp(200);
+        }
+        
+        return isValid;
     }
 })(jQuery);
