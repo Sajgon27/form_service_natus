@@ -171,7 +171,7 @@
 
     // Re-initialize service mode to ensure correct visibility
     updateServiceModeVisibility();
-    
+
     // Apply tank type restrictions to new sections
     applyTankTypeRestrictions();
 
@@ -316,43 +316,70 @@
   function setupTankTypeSelection() {
     // Initial setup for existing aquariums
     applyTankTypeRestrictions();
-    
+
     // Handle when new checkboxes are added (when adding new aquariums)
-    $(document).on("click", '.akwarium-section input[name^="akw"][name$="[typ][]"]', function() {
-      const $clickedCheckbox = $(this);
-      const aquariumId = $clickedCheckbox.closest('.akwarium-section').attr('id');
-      
-      if ($clickedCheckbox.prop('checked')) {
-        // Disable all other type checkboxes in this aquarium section
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($clickedCheckbox).prop('checked', false);
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($clickedCheckbox).prop('disabled', true);
-        
-        // Add disabled-checkbox class for styling
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($clickedCheckbox).closest('.checkbox-option').addClass('disabled-checkbox');
-      } else {
-        // If unchecked, enable all type checkboxes in this aquarium section
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).prop('disabled', false);
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).closest('.checkbox-option').removeClass('disabled-checkbox');
+    $(document).on(
+      "click",
+      '.akwarium-section input[name^="akw"][name$="[typ][]"]',
+      function () {
+        const $clickedCheckbox = $(this);
+        const aquariumId = $clickedCheckbox
+          .closest(".akwarium-section")
+          .attr("id");
+
+        if ($clickedCheckbox.prop("checked")) {
+          // Disable all other type checkboxes in this aquarium section
+          $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+            .not($clickedCheckbox)
+            .prop("checked", false);
+          $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+            .not($clickedCheckbox)
+            .prop("disabled", true);
+
+          // Add disabled-checkbox class for styling
+          $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+            .not($clickedCheckbox)
+            .closest(".checkbox-option")
+            .addClass("disabled-checkbox");
+        } else {
+          // If unchecked, enable all type checkboxes in this aquarium section
+          $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).prop(
+            "disabled",
+            false
+          );
+          $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+            .closest(".checkbox-option")
+            .removeClass("disabled-checkbox");
+        }
       }
-    });
+    );
   }
-  
+
   /**
    * Apply tank type selection restrictions to all aquarium sections
    */
   function applyTankTypeRestrictions() {
-    $('.akwarium-section').each(function() {
+    $(".akwarium-section").each(function () {
       const $aquarium = $(this);
-      const aquariumId = $aquarium.attr('id');
-      
+      const aquariumId = $aquarium.attr("id");
+
       // Check if any tank type is already selected
-      const $selectedType = $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]:checked`);
-      
+      const $selectedType = $(
+        `#${aquariumId} input[name^="akw"][name$="[typ][]"]:checked`
+      );
+
       if ($selectedType.length > 0) {
         // Disable all other type checkboxes in this aquarium section
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($selectedType).prop('checked', false);
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($selectedType).prop('disabled', true);
-        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`).not($selectedType).closest('.checkbox-option').addClass('disabled-checkbox');
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+          .not($selectedType)
+          .prop("checked", false);
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+          .not($selectedType)
+          .prop("disabled", true);
+        $(`#${aquariumId} input[name^="akw"][name$="[typ][]"]`)
+          .not($selectedType)
+          .closest(".checkbox-option")
+          .addClass("disabled-checkbox");
       }
     });
   }
@@ -504,114 +531,118 @@
       goToStep(3);
     });
 
-// Helper: convert FormData into nested object with arrays
-function formDataToNestedObject(form) {
-  const formData = new FormData(form);
-  const result = {};
+    // Helper: convert FormData into nested object with arrays
+    function formDataToNestedObject(form) {
+      const formData = new FormData(form);
+      const result = {};
 
-  for (const [key, value] of formData.entries()) {
-    // Find the corresponding input element (important for checkboxes with data attributes)
-    const input = form.querySelector(`[name="${CSS.escape(key)}"][value="${CSS.escape(value)}"]`);
-    const finalValue = input && input.dataset.text ? input.dataset.text : value;
+      for (const [key, value] of formData.entries()) {
+        // Find the corresponding input element (important for checkboxes with data attributes)
+        const input = form.querySelector(
+          `[name="${CSS.escape(key)}"][value="${CSS.escape(value)}"]`
+        );
+        const finalValue =
+          input && input.dataset.text ? input.dataset.text : value;
 
-    // Split keys like "extra_services[1][]" → ["extra_services", "1", ""]
-    const parts = key.split(/\[|\]/).filter(Boolean);
+        // Split keys like "extra_services[1][]" → ["extra_services", "1", ""]
+        const parts = key.split(/\[|\]/).filter(Boolean);
 
-    let current = result;
-    parts.forEach((part, index) => {
-      const isLast = index === parts.length - 1;
+        let current = result;
+        parts.forEach((part, index) => {
+          const isLast = index === parts.length - 1;
 
-      if (isLast) {
-        // Last part → assign value (handle arrays)
-        if (current[part]) {
-          if (!Array.isArray(current[part])) {
-            current[part] = [current[part]];
+          if (isLast) {
+            // Last part → assign value (handle arrays)
+            if (current[part]) {
+              if (!Array.isArray(current[part])) {
+                current[part] = [current[part]];
+              }
+              current[part].push(finalValue);
+            } else {
+              current[part] = finalValue;
+            }
+          } else {
+            // Not last → create object if missing
+            if (!current[part]) {
+              current[part] = {};
+            }
+            current = current[part];
           }
-          current[part].push(finalValue);
-        } else {
-          current[part] = finalValue;
-        }
-      } else {
-        // Not last → create object if missing
-        if (!current[part]) {
-          current[part] = {};
-        }
-        current = current[part];
+        });
       }
-    });
-  }
 
-  return result;
-}
-
-// Submit form
-$("#submit-form").click(function (e) {
-  e.preventDefault();
-
-  if (validateStep4()) {
-    const form = document.getElementById("serwis-natu-form");
-    let data = formDataToNestedObject(form);
-    
-    // Get the total cost value from the final-cost-total-value element
-    const totalCostElement = document.querySelector('.final-cost-total-value');
-    if (totalCostElement) {
-      // Extract the value and remove the currency symbol (zł) and convert to float
-      const totalCostText = totalCostElement.textContent.trim();
-      const totalCost = parseFloat(totalCostText.replace('zł', '').trim());
-      // Add to form data
-      data.total_cost = totalCost;
+      return result;
     }
 
-    // Merge extra_services into akw
-    for (let akwId in data.akw) {
-      if (data.extra_services && data.extra_services[akwId]) {
-        data.akw[akwId]['extra_services'] = data.extra_services[akwId];
-      } else {
-        data.akw[akwId]['extra_services'] = [];
-      }
-    }
+    // Submit form
+    $("#submit-form").click(function (e) {
+      e.preventDefault();
 
-    // Optionally remove extra_services key
-    delete data.extra_services;
+      if (validateStep4()) {
+        const form = document.getElementById("serwis-natu-form");
+        let data = formDataToNestedObject(form);
 
-    console.log(data);
-    
-    // Create FormData for file uploads
-    const formData = new FormData();
-    formData.append('action', 'submit_order');
-    formData.append('form_data', JSON.stringify(data));
-    
-    // Add all file inputs to FormData
-    const fileInputs = document.querySelectorAll('input[type="file"].file-upload');
-    fileInputs.forEach(input => {
-      if (input.files && input.files[0]) {
-        formData.append(input.name, input.files[0]);
+        // Get the total cost value from the final-cost-total-value element
+        const totalCostElement = document.querySelector(
+          ".final-cost-total-value"
+        );
+        if (totalCostElement) {
+          // Extract the value and remove the currency symbol (zł) and convert to float
+          const totalCostText = totalCostElement.textContent.trim();
+          const totalCost = parseFloat(totalCostText.replace("zł", "").trim());
+          // Add to form data
+          data.total_cost = totalCost;
+        }
+
+        // Merge extra_services into akw
+        for (let akwId in data.akw) {
+          if (data.extra_services && data.extra_services[akwId]) {
+            data.akw[akwId]["extra_services"] = data.extra_services[akwId];
+          } else {
+            data.akw[akwId]["extra_services"] = [];
+          }
+        }
+
+        // Optionally remove extra_services key
+        delete data.extra_services;
+
+        console.log(data);
+
+        // Create FormData for file uploads
+        const formData = new FormData();
+        formData.append("action", "submit_order");
+        formData.append("form_data", JSON.stringify(data));
+
+        // Add all file inputs to FormData
+        const fileInputs = document.querySelectorAll(
+          'input[type="file"].file-upload'
+        );
+        fileInputs.forEach((input) => {
+          if (input.files && input.files[0]) {
+            formData.append(input.name, input.files[0]);
+          }
+        });
+
+        let ajaxurl = "/wp-admin/admin-ajax.php";
+        // Send to PHP via AJAX with FormData
+        $.ajax({
+          url: ajaxurl,
+          method: "POST",
+          data: formData,
+          processData: false, // Prevent jQuery from processing the data
+          contentType: false, // Let the browser set the content type for FormData
+          success: function (response) {
+            console.log(response);
+            alert("Zgłoszenie wysłane pomyślnie!");
+            location.reload();
+          },
+          error: function (err) {
+            console.error(err);
+            alert("Błąd podczas wysyłania zgłoszenia.");
+          },
+        });
       }
     });
-    
-    let ajaxurl = '/wp-admin/admin-ajax.php';
-    // Send to PHP via AJAX with FormData
-    $.ajax({
-      url: ajaxurl,
-      method: 'POST',
-      data: formData,
-      processData: false,  // Prevent jQuery from processing the data
-      contentType: false,  // Let the browser set the content type for FormData
-      success: function (response) {
-        console.log(response);
-        alert("Zgłoszenie wysłane pomyślnie!");
-        location.reload();
-      },
-      error: function (err) {
-        console.error(err);
-        alert("Błąd podczas wysyłania zgłoszenia.");
-      }
-    });
-    
-  }
-});
-
-
   }
 
   /**
@@ -1637,7 +1668,9 @@ $("#submit-form").click(function (e) {
     $container.append(`
             <div class="final-cost-total">
                 <span>Razem:</span>
-                <span class="final-cost-total-value">${totalCost.toFixed(2)} zł</span>
+                <span class="final-cost-total-value">${totalCost.toFixed(
+                  2
+                )} zł</span>
             </div>
         `);
   }
@@ -1649,14 +1682,14 @@ $("#submit-form").click(function (e) {
    * @return {string} Human-readable label
    */
   function getLabelForOption(optionValue) {
-  // Find the input with the given value
-  const $option = $(`input[value="${optionValue}"]`);
-  if ($option.length) {
-    // Return its data-text attribute (if defined), otherwise fallback to value
-    return $option.data("text") || optionValue;
+    // Find the input with the given value
+    const $option = $(`input[value="${optionValue}"]`);
+    if ($option.length) {
+      // Return its data-text attribute (if defined), otherwise fallback to value
+      return $option.data("text") || optionValue;
+    }
+    return optionValue;
   }
-  return optionValue;
-}
 
   /**
    * Validate step 4 (required checkboxes)

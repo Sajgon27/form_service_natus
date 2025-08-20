@@ -128,50 +128,10 @@ class Serwis_Natu_Admin {
         // Add settings fields for checkbox to package mappings
         $this->add_checkbox_fields();
         
-        // Add admin styles
-        add_action('admin_head', array($this, 'admin_styles'));
+      
     }
     
-    /**
-     * Add admin styles
-     */
-    public function admin_styles() {
-        ?>
-        <style>
-            .package-mapping-row,
-            .product-mapping-row {
-                display: flex;
-                flex-wrap: wrap;
-                margin-bottom: 10px;
-            }
-            
-            .package-mapping-column,
-            .product-mapping-column {
-                flex: 1;
-                min-width: 200px;
-                margin-right: 20px;
-                margin-bottom: 10px;
-            }
-            
-            .package-mapping-column select,
-            .product-mapping-column select {
-                width: 100%;
-            }
-            
-            .product-mapping-row {
-                margin-top: 15px;
-                padding-top: 15px;
-                border-top: 1px dashed #ccc;
-            }
-            
-            h3 {
-                margin-top: 30px;
-                padding-bottom: 5px;
-                border-bottom: 1px solid #ccc;
-            }
-        </style>
-        <?php
-    }
+  
 
     /**
      * Render settings page

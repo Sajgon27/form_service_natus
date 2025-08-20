@@ -127,11 +127,7 @@ class Serwis_Natu
      */
     public function register_admin_assets($hook)
     {
-        // Only load on our settings page
-        if ($hook !== 'toplevel_page_serwis-natu-settings') {
-            return;
-        }
-
+        // Load on all admin pages
         wp_enqueue_style(
             'serwis-natu-admin-style',
             SERWIS_NATU_URL . 'admin/css/serwis-natu-admin.css',
@@ -155,15 +151,7 @@ class Serwis_Natu
             SERWIS_NATU_VERSION
         );
 
-   
 
-        // Register Recommended Products CSS
-        wp_register_style(
-            'serwis-natu-recommended-products',
-            SERWIS_NATU_URL . 'assets/css/recommended-products.css',
-            array('serwis-natu-style'),
-            SERWIS_NATU_VERSION
-        );
 
         // Register Summary CSS
         wp_register_style(
@@ -369,7 +357,7 @@ function handle_submit_order()
         $aquariums = $data['akw']; // Pass aquarium data to the template
         
         // Include the email template
-        include_once(SERWIS_NATU_PATH . 'templates/email-order-confirmation.php');
+        include_once(SERWIS_NATU_PATH . 'templates/emails/email-order-confirmation.php');
         
         // Get the email content from the buffer
         $email_content = ob_get_clean();

@@ -40,22 +40,22 @@ defined('ABSPATH') || exit;
         <div class="serwis-natu-steps-container">
             <!-- Step 1 -->
             <div class="serwis-natu-step active" id="step-1">
-                <?php include SERWIS_NATU_PATH . 'templates/krok-1.php'; ?>
+                <?php include SERWIS_NATU_PATH . 'templates/steps/step-1.php'; ?>
             </div>
 
             <!-- Step 2 -->
             <div class="serwis-natu-step" id="step-2">
-                <?php include SERWIS_NATU_PATH . 'templates/krok-2.php'; ?>
+                <?php include SERWIS_NATU_PATH . 'templates/steps/step-2.php'; ?>
             </div>
 
             <!-- Step 3 -->
             <div class="serwis-natu-step" id="step-3">
-                <?php include SERWIS_NATU_PATH . 'templates/krok-3.php'; ?>
+                <?php include SERWIS_NATU_PATH . 'templates/steps/step-3.php'; ?>
             </div>
 
             <!-- Step 4 -->
             <div class="serwis-natu-step" id="step-4">
-                <?php include SERWIS_NATU_PATH . 'templates/krok-4.php'; ?>
+                <?php include SERWIS_NATU_PATH . 'templates/steps/step-4.php'; ?>
             </div>
         </div>
     </form>

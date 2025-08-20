@@ -2,7 +2,7 @@
  * Serwis Natu form styles
  */
 
- :root {
+:root {
   --sa-primary: #ff8c00;
   --sa-primary-hover: #ff7000;
   --sa-light: #f5f5f5;
@@ -16,79 +16,77 @@
   --sa-accent: #6ba505;
 }
 
-
 .serwis-natu-form-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
 .sa-progress-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2em;
-    gap: 1em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  gap: 1em;
 }
 
 .sa-progress-item {
- display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    width: 25%;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 25%;
+  position: relative;
 }
 
 .sa-progress-label {
-    text-align: left;
-    font-size: 14px;
-    color: var(--sa-inactive);
+  text-align: left;
+  font-size: 14px;
+  color: var(--sa-inactive);
 }
 
 .sa-progress-item.active .sa-progress-label {
-    color: var(--sa-dark);
-    font-weight: 500;
+  color: var(--sa-dark);
+  font-weight: 500;
 }
 
 .sa-progress {
-    width: 100%;
-    height: 8px;
-    background-color: #e6e6e6;
-    transition: background-color 0.3s ease;
-    margin-top: 35px;
-    border-radius: 10px;
+  width: 100%;
+  height: 8px;
+  background-color: #e6e6e6;
+  transition: background-color 0.3s ease;
+  margin-top: 35px;
+  border-radius: 10px;
 }
 
-
 .sa-progress-item.active .sa-progress {
-    background-color: var(--sa-accent);
-    color: white;
+  background-color: var(--sa-accent);
+  color: white;
 }
 
 #serwis-natu-form h2 {
-    font-size: 24px;
-    color: var(--sa-dark);
-    margin-bottom: 10px;
-    font-weight: 600;
+  font-size: 24px;
+  color: var(--sa-dark);
+  margin-bottom: 10px;
+  font-weight: 600;
 }
 
 #serwis-natu-form h3 {
-    font-size: 18px;
-    color: var(--sa-dark);
-    margin-top: 20px;
-    margin-bottom: 15px;
-    font-weight: 500;
+  font-size: 18px;
+  color: var(--sa-dark);
+  margin-top: 20px;
+  margin-bottom: 15px;
+  font-weight: 500;
 }
 
 .step-description {
-    margin-top: 1em;
-    line-height: 1.5;
-    margin-bottom: 2em;
-    color: var(--sa-text);
-    font-size: 15px;
+  margin-top: 1em;
+  line-height: 1.5;
+  margin-bottom: 2em;
+  color: var(--sa-text);
+  font-size: 15px;
 }
-
 
 /* RADIO BUTTONS */
 .sa-radio-label {
@@ -140,22 +138,21 @@
 }
 
 .sa-radio {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
 }
 
 .sa-radio-text {
-    cursor: pointer;
-    color: #333;
-    font-size: 16px;
-    line-height: 1.4;
-    display: flex
-;
-    align-items: center;
-    gap: 6px;
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* Fallback dla starsze przeglądarki (bez :has()) */
@@ -165,389 +162,364 @@
 }
 
 .serwis-natu-step {
-    display: none;
-
+  display: none;
 }
 
 .serwis-natu-step.active {
-    display: block;
+  display: block;
 }
 
-
-
 .step-description {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 50px;
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 50px;
 }
 
 .form-section {
-    margin-bottom: 40px;
+  margin-bottom: 40px;
 }
-
-
-
 
 .checkbox-options {
-   display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 20px;
 }
 
-
-
-input[type="checkbox"]:focus-visible , input[type="checkbox"]:focus {
-    outline: none !important;
+input[type="checkbox"]:focus-visible,
+input[type="checkbox"]:focus {
+  outline: none !important;
 }
 .checkbox-option,
 .extra-service-item,
 label:has(input[type="checkbox"]) {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    position: relative;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  position: relative;
 }
 label:has(input[type="checkbox"]) {
-    margin-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 .checkbox-option input[type="checkbox"],
 .extra-service-item input[type="checkbox"],
 label input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 24px;
-    height: 24px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    background-color: white;
-    margin-right: 12px;
-    margin-top: 2px;
-    flex-shrink: 0;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
 .checkbox-option input[type="checkbox"]:checked,
 .extra-service-item input[type="checkbox"]:checked,
 label input[type="checkbox"]:checked {
-    background-color: #7CB342;
-    border-color: #7CB342;
+  background-color: #7cb342;
+  border-color: #7cb342;
 }
 
 .checkbox-option input[type="checkbox"]:checked::after,
 .extra-service-item input[type="checkbox"]:checked::after,
 label input[type="checkbox"]:checked::after {
-    content: "✓";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    line-height: 1;
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
 }
 
 .checkbox-option label,
 .extra-service-item label,
 label:has(input[type="checkbox"]) {
-    cursor: pointer;
-    color: #333;
-    font-size: 16px;
-    line-height: 1.4;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .extra-service-item label {
-    width: 100%;
+  width: 100%;
 }
 
 .extra-service-name {
-    display: block;
+  display: block;
 }
-
-
 
 .extra-service-item label {
-    width: 100%;
+  width: 100%;
 }
 
 .extra-service-name {
-    display: block;
+  display: block;
 }
-
-
-
-
 
 .radio-options {
-
 }
 
 .radio-option,
 .checkbox-option {
-    display: flex;
-    align-items: center;
-   
+  display: flex;
+  align-items: center;
 }
 .radio-option {
- margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 input[type="radio"],
 input[type="checkbox"] {
-    margin-right: 8px;
+  margin-right: 8px;
 }
 
 .subsection {
-    
-  
-    padding: 15px;
-   
+  padding: 15px;
 }
 
 #serwis-natu-form h4 {
-    font-size: 16px;
-    margin-top: 10px;
+  font-size: 16px;
+  margin-top: 10px;
 }
 
 .akwarium-section {
-    margin-bottom: 30px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    background-color: #fff;
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  background-color: #fff;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 #wiecej_container {
-    margin-top: 10px;
-    margin-left: 25px;
+  margin-top: 10px;
+  margin-left: 25px;
 }
 
 #wiecej_container input[type="number"] {
-    width: 80px;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
+  width: 80px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
 }
 
 .form-navigation {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
 }
 
-
-
 .sa-button {
-   display: inline-block;
-    padding: 1em 2em;
-    color: white;
-    background-color: var(--sa-accent);
-    border-radius: 35px;
-    transition: all 0.3s ease;
-    font-size: 1em;
-    cursor: pointer;
-    border: 0;
-    font-weight: 500;
+  display: inline-block;
+  padding: 1em 2em;
+  color: white;
+  background-color: var(--sa-accent);
+  border-radius: 35px;
+  transition: all 0.3s ease;
+  font-size: 1em;
+  cursor: pointer;
+  border: 0;
+  font-weight: 500;
 }
 
 .next-step {
-    background-color: var(--sa-primary);
-    color: white;
+  background-color: var(--sa-primary);
+  color: white;
 }
-
-
 
 .prev-step {
-    background-color: var(--sa-light);
-    color: var(--sa-dark);
+  background-color: var(--sa-light);
+  color: var(--sa-dark);
 }
-
-
 
 .tooltip-icon {
   width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 1px solid var(--sa-gray);
-    color: var(--sa-dark);
-    display: flex
-;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    margin-left: 8px;
-    cursor: help;
-    position: relative;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--sa-gray);
+  color: var(--sa-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  margin-left: 8px;
+  cursor: help;
+  position: relative;
 }
 
-
-
 .tooltip-content {
-    position: absolute;
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    border-radius: 4px;
-    min-width: 200px;
-    max-width: 300px;
-    z-index: 100;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.3s, visibility 0.3s;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    pointer-events: none; /* Prevent tooltip from blocking mouse events */
+  position: absolute;
+  background-color: #333;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  min-width: 200px;
+  max-width: 300px;
+  z-index: 100;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  pointer-events: none; /* Prevent tooltip from blocking mouse events */
 }
 
 .tooltip-content::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #333 transparent transparent transparent;
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
 }
 
 .tooltip-icon:hover .tooltip-content {
-    visibility: visible;
-    opacity: 1;
+  visibility: visible;
+  opacity: 1;
 }
 
 .error-message {
-    color: #f44336;
-    background-color: #ffebee;
-    padding: 10px;
-    font-size: 18px;
-    border-radius: 4px;
-    margin: 10px 0;
-    border-left: 4px solid #f44336;
-    display: none;
+  color: #f44336;
+  background-color: #ffebee;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 4px;
+  margin: 10px 0;
+  border-left: 4px solid #f44336;
+  display: none;
 }
 
 /* Styling for disabled checkboxes and their labels */
 input[type="checkbox"]:disabled + label {
-    color: #ccc;
-    cursor: not-allowed;
+  color: #ccc;
+  cursor: not-allowed;
 }
 
 /* Improve cursor appearance for tooltip icons */
-label:has(+ .tooltip-icon), 
+label:has(+ .tooltip-icon),
 label:has(.tooltip-icon) {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 /* Animation for showing/hiding aquarium sections */
 .akwarium-section {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.akwarium-section:nth-child(n+2) {
-    animation: fadeIn 0.4s ease forwards;
+.akwarium-section:nth-child(n + 2) {
+  animation: fadeIn 0.4s ease forwards;
 }
 
 .fade-in-section {
-    animation: fadeIn 0.4s ease forwards;
+  animation: fadeIn 0.4s ease forwards;
 }
 
 #template-akwarium {
-    display: none !important;
+  display: none !important;
 }
 
 /* Disabled fields styling */
 input[type="checkbox"]:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Step 3 Styling */
 .package-recommendation {
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 20px;
 }
 
 .package-recommendation:hover {
-   
 }
 
 .package-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-
 .loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 30px 0;
-    flex-direction: column;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 0;
+  flex-direction: column;
 }
 
 .spinner {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #4CAF50;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin-bottom: 15px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #4caf50;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Step 2 styles */
 .form-row {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .two-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 20px;
 }
 
 .form-field {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .form-field label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .form-field input[type="text"],
@@ -555,152 +527,341 @@ input[type="checkbox"]:disabled {
 .form-field input[type="tel"],
 .form-field input[type="datetime-local"],
 .form-field textarea {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 15px;
-    border: 1px solid var(--sa-border);
-    border-radius: 25px;
-    background-color: white;
-    color: var(--sa-dark);
-    transition: border-color 0.3s;
-      box-sizing: border-box;
-
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid var(--sa-border);
+  border-radius: 25px;
+  background-color: white;
+  color: var(--sa-dark);
+  transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .form-field input.error,
 .form-field textarea.error {
-    border-color: #d32f2f;
-    background-color: #fff8f8;
+  border-color: #d32f2f;
+  background-color: #fff8f8;
 }
 
 .form-field .required {
-    color: #d32f2f;
-    margin-left: 3px;
+  color: #d32f2f;
+  margin-left: 3px;
 }
 
 .form-field textarea {
-    resize: vertical;
-    min-height: 100px;
+  resize: vertical;
+  min-height: 100px;
 }
 
 .section-description {
-   font-size: 16px;
-    color: #666;
-    margin-bottom: 10px;
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
 }
 
 /* File upload styles */
 .file-upload {
-    position: relative;
-    cursor: pointer;
+  position: relative;
+  cursor: pointer;
 }
 
-
-
-
 .aquarium-photos-container {
-    margin: 20px 0;
+  margin: 20px 0;
 }
 
 .aquarium-photos-container .photo-upload-row {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .aquarium-photos-container .form-field {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .aquarium-photos-container .form-field label {
- display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .aquarium-photos-container .file-upload {
-    padding: 12px 16px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
 }
 
-
 .aquarium-photos-container .file-preview img {
-    width: 150px;
-    height: 150px;
-    border-radius: 4px;
-    object-fit: cover;
+  width: 150px;
+  height: 150px;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 .aquarium-photos-container .file-preview .file-info {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
 }
-
-
-
-
 
 .file-preview {
-    margin-top: 10px;
-    max-width: 150px;
-    position: relative;
+  margin-top: 10px;
+  max-width: 150px;
+  position: relative;
 }
 
-
-
 .remove-file-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background-color: rgba(255,255,255,0.8);
-    border: 1px solid #ddd;
-    font-size: 16px;
-    line-height: 1;
-    padding: 0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ddd;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .photo-upload-row {
-   
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .photo-upload-row:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 /* Styles for disabled checkboxes - Tank Type selection */
 .checkbox-option.disabled-checkbox {
-    opacity: 0.5;
-    pointer-events: none;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .checkbox-option.disabled-checkbox label {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
 .checkbox-option.disabled-checkbox input {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
+/* 
+ * Recommended Products Styles
+ */
 
+/* Container styles */
+#recommended-products-container {
+  margin-top: 20px;
+}
 
+/* Loading spinner */
+.loading-spinner {
+  text-align: center;
+  padding: 20px;
+}
 
+.loading-spinner .spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
+/* Products table */
+.recommended-products-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
 
+.recommended-products-table th,
+.recommended-products-table td {
+  text-align: left;
+}
 
+.recommended-products-table th {
+  color: #333;
+}
 
+.recommended-products-table td {
+  vertical-align: middle;
+}
+
+.recommended-products-table tr:hover {
+}
+
+.recommended-products-table img {
+  max-width: 100px;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+}
+
+/* No products message */
+.no-products-message {
+  padding: 20px;
+  text-align: center;
+  background-color: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-top: 20px;
+  color: #666;
+}
+
+/* No image placeholder */
+.no-image {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  color: #999;
+  font-size: 10px;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.extra-services-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+
+.extra-service-price {
+  font-weight: bold;
+  color: #4caf50;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.extra-service-description {
+  margin-top: 5px;
+  margin-bottom: 0;
+  margin-left: 24px;
+  font-size: 0.9em;
+  color: #777;
+}
+
+/* Cost summary styling for extra services */
+.cost-item.extra-service {
+  background-color: #f9fff9;
+}
+
+/* Responsive adjustments for extra services */
+@media (max-width: 768px) {
+  .extra-services-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .recommended-products-table th,
+  .recommended-products-table td {
+    padding: 8px;
+  }
+
+  .recommended-products-table img {
+    max-width: 40px;
+  }
+
+  .recommended-products-table th:first-child,
+  .recommended-products-table td:first-child {
+    padding-left: 5px;
+  }
+
+  .recommended-products-table th:last-child,
+  .recommended-products-table td:last-child {
+    padding-right: 5px;
+  }
+}
+
+.extra-services-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.extra-service-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.extra-service-tooltip {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: #999;
+  color: white;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 16px;
+  font-size: 11px;
+  margin-left: 5px;
+  cursor: help;
+  position: relative;
+}
+
+.extra-service-tooltip:hover {
+  background-color: #666;
+}
+
+.extra-service-tooltip .tooltip-content {
+  min-width: 180px;
+  max-width: 250px;
+}
+
+.extra-service-price {
+  font-size: 14px;
+  color: #4caf50;
+  font-weight: 500;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+/* Restart aquarium checkbox styling */
+.restart-checkbox:checked {
+  accent-color: #ff5722;
+}
+
+.restart-checkbox:checked + label {
+  color: #ff5722;
+  font-weight: bold;
+}
+
+/* Animation for newly added items */
+@keyframes highlightNew {
+  from {
+    background-color: #fffde7;
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.extra-service-item.new-item {
+  animation: highlightNew 1.5s ease-out;
+}

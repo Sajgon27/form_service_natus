@@ -3,28 +3,266 @@
  */
 
 .package-mapping-row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
 }
 
 .package-mapping-column {
-    flex: 1 1 250px;
-    margin-right: 20px;
-    margin-bottom: 10px;
+  flex: 1 1 250px;
+  margin-right: 20px;
+  margin-bottom: 10px;
 }
 
 .package-mapping-column:last-child {
-    margin-right: 0;
+  margin-right: 0;
 }
 
 .package-mapping-column label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
 }
 
 .package-mapping-column select {
-    width: 100%;
-    max-width: 250px;
+  width: 100%;
+  max-width: 250px;
+}
+
+.package-mapping-row,
+.product-mapping-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.package-mapping-column,
+.product-mapping-column {
+  flex: 1;
+  min-width: 200px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+}
+
+.package-mapping-column select,
+.product-mapping-column select {
+  width: 100%;
+}
+
+.product-mapping-row {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ccc;
+}
+
+h3 {
+  margin-top: 30px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+.extra-service-row {
+  background: #f9f9f9;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.extra-service-row h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+.service-field {
+  margin-bottom: 10px;
+}
+.service-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+.service-field input[type="text"],
+.service-field input[type="number"],
+.service-field textarea {
+  width: 100%;
+  max-width: 400px;
+}
+.service-field.actions {
+  margin-top: 15px;
+}
+.extra-services-actions {
+  margin: 20px 0;
+}
+
+/* SINGLE ZAMÓWIENIE PAGE */
+
+.order-detail-container {
+  margin: 20px 0;
+  box-sizing: border-box;
+}
+.order-detail-header {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.order-detail-columns {
+  display: flex;
+  flex-wrap: wrap;
+}
+.order-detail-column {
+  flex: 1;
+  min-width: 300px;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+.order-info-box {
+  background: #fff;
+  border: 1px solid #ccd0d4;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+.order-info-box h2 {
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 1.3em;
+  color: #23282d;
+}
+.client-details {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+.client-details .label {
+  font-weight: bold;
+  color: #23282d;
+}
+
+.aquarium-item {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.aquarium-item h2 {
+  margin-top: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 1.2em;
+  color: #23282d;
+}
+.aquarium-details {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+.aquarium-basic-details,
+.aquarium-services {
+  flex: 1;
+  min-width: 250px;
+  padding: 0 10px;
+}
+.aquarium-item h4 {
+  margin: 15px 0 5px 0;
+  color: #23282d;
+  font-size: 1.1em;
+}
+.aquarium-item h5 {
+  margin: 10px 0 5px 0;
+  color: #23282d;
+  font-weight: 600;
+}
+.aquarium-item ul {
+  margin: 0 0 15px 20px;
+}
+.aquarium-item p {
+  margin: 5px 0 10px 0;
+}
+.detail-list,
+.service-list {
+  padding-left: 0;
+  list-style-position: inside;
+}
+.order-actions {
+  margin-top: 20px;
+  text-align: right;
+  padding-right: 15px;
+}
+.order-status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 3px;
+  background: #f0f6fc;
+  color: #135e96;
+  font-weight: bold;
+}
+.order-date {
+  color: #666;
+  margin-top: 5px;
+  font-size: 14px;
+}
+.order-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: #f9f9f9;
+  border-radius: 3px;
+}
+.order-summary-item {
+  text-align: center;
+}
+.order-summary-item .value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #23282d;
+  display: block;
+}
+.order-summary-item .label {
+  font-size: 13px;
+  color: #646970;
+}
+.aquarium-photo {
+  margin: 15px 0;
+  text-align: left;
+}
+.aquarium-photo img {
+  max-width: 300px;
+  max-height: 200px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  cursor: pointer;
+}
+.order-price {
+  font-size: 18px;
+  font-weight: bold;
+
+  margin-top: 15px;
+  text-align: right;
+  padding-right: 15px;
+}
+.cooperative-mode {
+  background-color: #f0f6fc;
+  color: #135e96;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  display: inline-block;
+}
+/* Responsive styles */
+@media screen and (max-width: 782px) {
+  .client-details {
+    grid-template-columns: 1fr;
+  }
+  .aquarium-details {
+    display: block;
+  }
 }

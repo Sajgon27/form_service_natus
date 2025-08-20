@@ -151,39 +151,7 @@ class Serwis_Natu_Extra_Services {
         });
         </script>
         
-        <style>
-        .extra-service-row {
-            background: #f9f9f9;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .extra-service-row h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-        }
-        .service-field {
-            margin-bottom: 10px;
-        }
-        .service-field label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .service-field input[type="text"],
-        .service-field input[type="number"],
-        .service-field textarea {
-            width: 100%;
-            max-width: 400px;
-        }
-        .service-field.actions {
-            margin-top: 15px;
-        }
-        .extra-services-actions {
-            margin: 20px 0;
-        }
-        </style>
+      
         <?php
     }
 
