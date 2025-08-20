@@ -127,6 +127,50 @@ class Serwis_Natu_Admin {
         
         // Add settings fields for checkbox to package mappings
         $this->add_checkbox_fields();
+        
+        // Add admin styles
+        add_action('admin_head', array($this, 'admin_styles'));
+    }
+    
+    /**
+     * Add admin styles
+     */
+    public function admin_styles() {
+        ?>
+        <style>
+            .package-mapping-row,
+            .product-mapping-row {
+                display: flex;
+                flex-wrap: wrap;
+                margin-bottom: 10px;
+            }
+            
+            .package-mapping-column,
+            .product-mapping-column {
+                flex: 1;
+                min-width: 200px;
+                margin-right: 20px;
+                margin-bottom: 10px;
+            }
+            
+            .package-mapping-column select,
+            .product-mapping-column select {
+                width: 100%;
+            }
+            
+            .product-mapping-row {
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px dashed #ccc;
+            }
+            
+            h3 {
+                margin-top: 30px;
+                padding-bottom: 5px;
+                border-bottom: 1px solid #ccc;
+            }
+        </style>
+        <?php
     }
 
     /**
@@ -152,7 +196,7 @@ class Serwis_Natu_Admin {
      */
     public function render_section_description() {
         ?>
-        <p><?php _e('Skonfiguruj, które opcje formularza mają odpowiadać którym pakietom. Dla każdej opcji, wybierz odpowiedni pakiet jednorazowy i miesięczny.', 'serwis-natu'); ?></p>
+        <p><?php _e('Skonfiguruj, które opcje formularza mają odpowiadać którym pakietom oraz jakie produkty mają być polecane dla poszczególnych opcji. Dla każdej opcji, wybierz odpowiedni pakiet jednorazowy, miesięczny oraz do dwóch produktów WooCommerce, które chcesz polecić.', 'serwis-natu'); ?></p>
         <?php
     }
 
@@ -224,6 +268,24 @@ class Serwis_Natu_Admin {
         
         $one_time_value = isset($current_mappings[$name]['one_time']) ? $current_mappings[$name]['one_time'] : '';
         $subscription_value = isset($current_mappings[$name]['subscription']) ? $current_mappings[$name]['subscription'] : '';
+        
+        // Get product mappings
+        $product_1_id = isset($current_mappings[$name]['product_1']) ? $current_mappings[$name]['product_1'] : '';
+        $product_2_id = isset($current_mappings[$name]['product_2']) ? $current_mappings[$name]['product_2'] : '';
+        
+        // Get all WooCommerce products
+        $products = array();
+        if (function_exists('wc_get_products')) {
+            $args = array(
+                'status' => 'publish',
+                'limit' => -1,
+            );
+            $wc_products = wc_get_products($args);
+            
+            foreach ($wc_products as $product) {
+                $products[$product->get_id()] = $product->get_name() . ' (' . wc_price($product->get_price()) . ')';
+            }
+        }
         ?>
         <div class="package-mapping-row">
             <div class="package-mapping-column">
@@ -250,6 +312,32 @@ class Serwis_Natu_Admin {
                 </select>
             </div>
         </div>
+        
+        <div class="product-mapping-row">
+            <div class="product-mapping-column">
+                <label><?php _e('Polecany produkt 1:', 'serwis-natu'); ?></label>
+                <select name="<?php echo esc_attr($this->option_name); ?>[<?php echo esc_attr($name); ?>][product_1]">
+                    <option value=""><?php _e('-- Wybierz produkt --', 'serwis-natu'); ?></option>
+                    <?php foreach ($products as $product_id => $product_name) : ?>
+                        <option value="<?php echo esc_attr($product_id); ?>" <?php selected($product_1_id, $product_id); ?>>
+                            <?php echo wp_kses_post($product_name); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="product-mapping-column">
+                <label><?php _e('Polecany produkt 2:', 'serwis-natu'); ?></label>
+                <select name="<?php echo esc_attr($this->option_name); ?>[<?php echo esc_attr($name); ?>][product_2]">
+                    <option value=""><?php _e('-- Wybierz produkt --', 'serwis-natu'); ?></option>
+                    <?php foreach ($products as $product_id => $product_name) : ?>
+                        <option value="<?php echo esc_attr($product_id); ?>" <?php selected($product_2_id, $product_id); ?>>
+                            <?php echo wp_kses_post($product_name); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
         <?php
     }
 
@@ -265,163 +353,194 @@ class Serwis_Natu_Admin {
             array(
                 'name' => 'akw[1][typ][]',
                 'value' => 'lowtech',
-                'label' => __('Lowtech', 'serwis-natu')
+                'label' => __('Lowtech', 'serwis-natu'),
+                'products' => array() // Array to store selected product IDs
             ),
             array(
                 'name' => 'akw[1][typ][]',
                 'value' => 'hightech',
-                'label' => __('Hightech', 'serwis-natu')
+                'label' => __('Hightech', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][typ][]',
                 'value' => 'biotopowy',
-                'label' => __('Biotopowy', 'serwis-natu')
+                'label' => __('Biotopowy', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][typ][]',
                 'value' => 'roslinny',
-                'label' => __('Roślinny', 'serwis-natu')
+                'label' => __('Roślinny', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][typ][]',
                 'value' => 'dekoracyjny',
-                'label' => __('Dekoracyjny / Ekspozycyjny', 'serwis-natu')
+                'label' => __('Dekoracyjny / Ekspozycyjny', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][typ][]',
                 'value' => 'firmowe',
-                'label' => __('Akwarium firmowe / usługowe', 'serwis-natu')
+                'label' => __('Akwarium firmowe / usługowe', 'serwis-natu'),
+                'products' => array()
             ),
             
             // Cel zgłoszenia
             array(
                 'name' => 'akw[1][cel][]',
                 'value' => 'regularna',
-                'label' => __('Regularna pielęgnacja akwarium', 'serwis-natu')
+                'label' => __('Regularna pielęgnacja akwarium', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][cel][]',
                 'value' => 'czyszczenie',
-                'label' => __('Gruntowne czyszczenie i porządki', 'serwis-natu')
+                'label' => __('Gruntowne czyszczenie i porządki', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][cel][]',
                 'value' => 'restart',
-                'label' => __('Restart zbiornika', 'serwis-natu')
+                'label' => __('Restart zbiornika', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][cel][]',
                 'value' => 'dorazna',
-                'label' => __('Pomoc doraźna', 'serwis-natu')
+                'label' => __('Pomoc doraźna', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][cel][]',
                 'value' => 'aranzacja',
-                'label' => __('Zmiana aranżacji', 'serwis-natu')
+                'label' => __('Zmiana aranżacji', 'serwis-natu'),
+                'products' => array()
             ),
             
             // Zakres oczekiwanych działań
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'wymiana',
-                'label' => __('Podmiana i/lub dolanie wody', 'serwis-natu')
+                'label' => __('Podmiana i/lub dolanie wody', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'odmulanie',
-                'label' => __('Odmulanie dna', 'serwis-natu')
+                'label' => __('Odmulanie dna', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'czyszczenieSzyb',
-                'label' => __('Czyszczenie szyb i dekoracji', 'serwis-natu')
+                'label' => __('Czyszczenie szyb i dekoracji', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'przycinanie',
-                'label' => __('Przycinanie/obsadzanie roślin', 'serwis-natu')
+                'label' => __('Przycinanie/obsadzanie roślin', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'filtr',
-                'label' => __('Czyszczenie/konserwacja filtra', 'serwis-natu')
+                'label' => __('Czyszczenie/konserwacja filtra', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'nawozenie',
-                'label' => __('Sprawdzenie i korekta nawożenia', 'serwis-natu')
+                'label' => __('Sprawdzenie i korekta nawożenia', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'badanie',
-                'label' => __('Badanie parametrów wody', 'serwis-natu')
+                'label' => __('Badanie parametrów wody', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'glony',
-                'label' => __('Likwidacja glonów', 'serwis-natu')
+                'label' => __('Likwidacja glonów', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'przeglad',
-                'label' => __('Przegląd techniczny sprzętu', 'serwis-natu')
+                'label' => __('Przegląd techniczny sprzętu', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'montazSprzetu',
-                'label' => __('Montaż nowego sprzętu', 'serwis-natu')
+                'label' => __('Montaż nowego sprzętu', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'ocenaObsady',
-                'label' => __('Ocena stanu obsady', 'serwis-natu')
+                'label' => __('Ocena stanu obsady', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'szkolenie',
-                'label' => __('Szkolenie / instruktaż', 'serwis-natu')
+                'label' => __('Szkolenie / instruktaż', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'aranzacjaDekoracji',
-                'label' => __('Zmiana aranżacji/dekoracji', 'serwis-natu')
+                'label' => __('Zmiana aranżacji/dekoracji', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][zakres][]',
                 'value' => 'aplikacja',
-                'label' => __('Aplikacja preparatów', 'serwis-natu')
+                'label' => __('Aplikacja preparatów', 'serwis-natu'),
+                'products' => array()
             ),
             
             // Inne potrzeby
             array(
                 'name' => 'akw[1][inne][]',
                 'value' => 'jednorazowa',
-                'label' => __('Potrzebuję tylko jednorazowej pomocy', 'serwis-natu')
+                'label' => __('Potrzebuję tylko jednorazowej pomocy', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][inne][]',
                 'value' => 'stala',
-                'label' => __('Jestem zainteresowany stałą opieką', 'serwis-natu')
+                'label' => __('Jestem zainteresowany stałą opieką', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][inne][]',
                 'value' => 'kompleksowo',
-                'label' => __('Chcę, by ktoś kompleksowo zajął się moim zbiornikiem', 'serwis-natu')
+                'label' => __('Chcę, by ktoś kompleksowo zajął się moim zbiornikiem', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][inne][]',
                 'value' => 'okazja',
-                'label' => __('Chcę przygotować akwarium na konkretną okazję', 'serwis-natu')
+                'label' => __('Chcę przygotować akwarium na konkretną okazję', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][inne][]',
                 'value' => 'wakacje',
-                'label' => __('Wyjeżdżam na wakacje', 'serwis-natu')
+                'label' => __('Wyjeżdżam na wakacje', 'serwis-natu'),
+                'products' => array()
             ),
             array(
                 'name' => 'akw[1][inne][]',
                 'value' => 'diagnoza',
-                'label' => __('Mam problem - potrzebuję diagnozy', 'serwis-natu')
+                'label' => __('Mam problem - potrzebuję diagnozy', 'serwis-natu'),
+                'products' => array()
             )
         );
         
@@ -444,12 +563,22 @@ class Serwis_Natu_Admin {
                 // Sanitize the key
                 $key = sanitize_text_field($key);
                 
+                // Package mappings
                 if (isset($values['one_time'])) {
                     $sanitized[$key]['one_time'] = sanitize_text_field($values['one_time']);
                 }
                 
                 if (isset($values['subscription'])) {
                     $sanitized[$key]['subscription'] = sanitize_text_field($values['subscription']);
+                }
+                
+                // Product mappings
+                if (isset($values['product_1'])) {
+                    $sanitized[$key]['product_1'] = absint($values['product_1']);
+                }
+                
+                if (isset($values['product_2'])) {
+                    $sanitized[$key]['product_2'] = absint($values['product_2']);
                 }
             }
         }
@@ -480,6 +609,31 @@ class Serwis_Natu_Admin {
         return get_option('serwis_natu_package_mappings', array());
     }
     
+    /**
+     * Get recommended products for a checkbox
+     *
+     * @param string $checkbox_id The checkbox ID (value)
+     * @return array Array of product IDs
+     */
+    public static function get_recommended_products($checkbox_id) {
+        $package_mappings = self::get_package_mappings();
+        $products = array();
+        
+        if (isset($package_mappings[$checkbox_id])) {
+            // Product 1
+            if (!empty($package_mappings[$checkbox_id]['product_1'])) {
+                $products[] = $package_mappings[$checkbox_id]['product_1'];
+            }
+            
+            // Product 2
+            if (!empty($package_mappings[$checkbox_id]['product_2'])) {
+                $products[] = $package_mappings[$checkbox_id]['product_2'];
+            }
+        }
+        
+        return $products;
+    }
+
     /**
      * Get recommended package based on form selections
      *
@@ -573,6 +727,43 @@ class Serwis_Natu_Admin {
             'name' => $available_packages[$package_type][$default_key]['name'],
             'price' => $available_packages[$package_type][$default_key]['price'],
         );
+    }
+    
+    /**
+     * Get all recommended products based on selected checkboxes
+     *
+     * @param array $form_data Form data
+     * @param int $aquarium_index Aquarium index
+     * @return array Array of product IDs
+     */
+    public static function get_all_recommended_products($form_data, $aquarium_index) {
+        $products = array();
+        
+        // Get the aquarium's selections
+        $aquarium_data = isset($form_data['akw'][$aquarium_index]) ? $form_data['akw'][$aquarium_index] : array();
+        
+        // If we don't have data for this aquarium, return empty array
+        if (empty($aquarium_data)) {
+            return $products;
+        }
+        
+        // Combine all selections from this aquarium
+        $all_selections = array();
+        foreach ($aquarium_data as $category => $selections) {
+            if (is_array($selections)) {
+                foreach ($selections as $selection) {
+                    // Get recommended products for this checkbox
+                    $checkbox_products = self::get_recommended_products($selection);
+                    
+                    if (!empty($checkbox_products)) {
+                        $products = array_merge($products, $checkbox_products);
+                    }
+                }
+            }
+        }
+        
+        // Return unique products
+        return array_unique($products);
     }
     
     /**

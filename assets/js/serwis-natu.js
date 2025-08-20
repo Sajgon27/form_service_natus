@@ -37,6 +37,7 @@
         setupServiceMode();
         setupFileUploadFields();
         setupStepNavigation();
+        setupRecommendedProducts();
     }
     
     /**
@@ -737,17 +738,8 @@
                 },
                 success: function(response) {
                     console.log('AJAX response:', response);
-                    if (response.success && response.data) {
-                        // Store extra services globally for later use
-                        if (response.data.extraServices) {
-                            window.extraServices = response.data.extraServices;
-                        }
-                        
-                        if (response.data.recommendations) {
-                            resolve(response.data.recommendations);
-                        } else {
-                            reject(new Error('Brak rekomendacji w odpowiedzi serwera.'));
-                        }
+                    if (response.success && response.data && response.data.recommendations) {
+                        resolve(response.data.recommendations);
                     } else {
                         const errorMessage = response.data && response.data.message ? 
                             response.data.message : 'Nie udało się uzyskać rekomendacji pakietów.';
@@ -793,104 +785,8 @@
                     <div class="package-description">
                         ${recommendation.packageDescription}
                     </div>
-                    <div class="extra-services-container">
-                        <h4 class="extra-services-title">Usługi dodatkowe:</h4>
-                        <div class="extra-services-list" data-aquarium="${recommendation.aquariumIndex}">
-                            <!-- Extra services will be added here -->
-                        </div>
-                    </div>
                 </div>
             `);
-            
-            // Add extra services if available
-            if (window.extraServices && window.extraServices.length > 0) {
-                const $servicesList = $recommendation.find('.extra-services-list');
-                
-                window.extraServices.forEach(function(service) {
-                    // Check if this is the restart_akwarium service
-                    const isRestartService = service.id === 'restart_akwarium';
-                    
-                    const $serviceItem = $(`
-                        <div class="extra-service-item">
-                            <div class="extra-service-info">
-                                <input type="checkbox" 
-                                    name="extra_service[${recommendation.aquariumIndex}][${service.id}]" 
-                                    data-price="${service.price}" 
-                                    data-aquarium="${recommendation.aquariumIndex}"
-                                    class="extra-service-checkbox ${isRestartService ? 'restart-checkbox' : ''}" 
-                                    id="extra-service-${recommendation.aquariumIndex}-${service.id}"
-                                    ${isRestartService ? 'data-is-restart="true"' : ''}>
-                                <label for="extra-service-${recommendation.aquariumIndex}-${service.id}" class="extra-service-name">
-                                    ${service.name}
-                                    ${service.tooltip ? `<span class="extra-service-tooltip" title="${service.tooltip}">?<span class="tooltip-content">${service.tooltip}</span></span>` : ''}
-                                </label>
-                            </div>
-                            <div class="extra-service-price">+${service.price} zł</div>
-                        </div>
-                    `);
-                    
-                    $servicesList.append($serviceItem);
-                });
-                
-                // Check if restart checkbox is already checked on load and disable other checkboxes
-                const $restartCheckbox = $servicesList.find('.restart-checkbox');
-                if ($restartCheckbox.length && $restartCheckbox.prop('checked')) {
-                    const aquariumIndex = $restartCheckbox.data('aquarium');
-                    const $otherCheckboxes = $(`.extra-service-checkbox[data-aquarium="${aquariumIndex}"]:not([data-is-restart="true"])`);
-                    $otherCheckboxes.prop('disabled', true).prop('checked', false)
-                        .closest('.extra-service-item').addClass('disabled');
-                }
-                
-                // Add event listener for extra service checkboxes
-                $servicesList.find('.extra-service-checkbox').on('change', function() {
-                    const $checkbox = $(this);
-                    const isChecked = this.checked;
-                    const isRestartCheckbox = $checkbox.data('is-restart') === true;
-                    const aquariumIndex = $checkbox.data('aquarium');
-                    
-                    // Add or remove selected class
-                    $checkbox.closest('.extra-service-item').toggleClass('selected', isChecked);
-                    
-                    // Special handling for restart_akwarium checkbox
-                    if (isRestartCheckbox) {
-                        // Get all other checkboxes for this aquarium
-                        const $otherCheckboxes = $(`.extra-service-checkbox[data-aquarium="${aquariumIndex}"]:not([data-is-restart="true"])`);
-                        
-                        if (isChecked) {
-                            // If restart is checked, disable and uncheck all other checkboxes
-                            $otherCheckboxes.prop('disabled', true).prop('checked', false)
-                                .closest('.extra-service-item').removeClass('selected')
-                                .addClass('disabled');
-                        } else {
-                            // If restart is unchecked, enable all other checkboxes
-                            $otherCheckboxes.prop('disabled', false)
-                                .closest('.extra-service-item').removeClass('disabled');
-                        }
-                    } else {
-                        // If any other checkbox is checked, make sure it's not disabled by restart
-                        const $restartCheckbox = $(`.restart-checkbox[data-aquarium="${aquariumIndex}"]`);
-                        if ($restartCheckbox.prop('checked')) {
-                            // Prevent checking if restart is enabled
-                            $checkbox.prop('checked', false);
-                            return false;
-                        }
-                    }
-                    
-                    // Highlight newly selected item
-                    if(isChecked) {
-                        $checkbox.closest('.extra-service-item').addClass('new-item');
-                        setTimeout(() => {
-                            $checkbox.closest('.extra-service-item').removeClass('new-item');
-                        }, 1500);
-                    }
-                    
-                    // Recalculate cost summary when extra services are selected/deselected
-                    displayCostSummary(recommendations);
-                });
-            } else {
-                // If no extra services are available, hide the container
-                $recommendation.find('.extra-services-container').hide();
-            }
             
             $container.append($recommendation);
         });
@@ -915,29 +811,12 @@
         const costItems = [];
         
         recommendations.forEach(function(recommendation) {
-            // Add base package cost
             costItems.push({
                 label: `Akwarium ${recommendation.aquariumIndex} - ${recommendation.packageName}`,
                 price: recommendation.packagePrice
             });
             
             totalCost += recommendation.packagePrice;
-            
-            // Add selected extra services
-            if (window.extraServices && window.extraServices.length > 0) {
-                $(`.extra-service-checkbox[data-aquarium="${recommendation.aquariumIndex}"]:checked`).each(function() {
-                    const $checkbox = $(this);
-                    const servicePrice = parseInt($checkbox.data('price'), 10) || 0;
-                    const serviceName = $checkbox.closest('.extra-service-item').find('.extra-service-name').text().trim();
-                    
-                    costItems.push({
-                        label: `&nbsp;&nbsp;&nbsp;➕ ${serviceName} (Akwarium ${recommendation.aquariumIndex})`,
-                        price: servicePrice
-                    });
-                    
-                    totalCost += servicePrice;
-                });
-            }
         });
         
         // Build HTML
@@ -965,4 +844,167 @@
         $costSummary.append($totalCost);
     }
     
+    /**
+     * Setup recommended products functionality
+     */
+    function setupRecommendedProducts() {
+        // Handle the checkbox change event
+        $('#recommended_products_checkbox').on('change', function() {
+            const $container = $('#recommended-products-container');
+            
+            if ($(this).is(':checked')) {
+                $container.slideDown(300);
+                loadRecommendedProducts();
+            } else {
+                $container.slideUp(300);
+            }
+        });
+    }
+    
+    /**
+     * Load recommended products based on form selections
+     */
+    function loadRecommendedProducts() {
+        const $container = $('#recommended-products-container');
+        const $productsList = $('#recommended-products-list');
+        
+        // Show loading spinner
+        $container.show();
+        $productsList.hide();
+        $('.loading-spinner', $container).show();
+        
+        // Get form data
+        const formData = getFormData();
+        
+        console.log('serwisNatuData object:', serwisNatuData);
+        
+        // Get the appropriate AJAX URL and nonce
+        const ajaxUrl = serwisNatuData.ajaxurl || '/wp-admin/admin-ajax.php';
+        // Try multiple possible nonce key names
+        const nonce = serwisNatuData.ajaxNonce || serwisNatuData.nonce || '';
+        
+        console.log('Using AJAX URL:', ajaxUrl);
+        console.log('Form data to be sent:', formData);
+        
+        // Send AJAX request to get recommended products
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'get_recommended_products',
+                nonce: nonce,
+                form_data: formData
+            },
+            success: function(response) {
+                console.log('Recommended products AJAX response:', response);
+                if (response && response.success && response.data && response.data.products) {
+                    displayRecommendedProducts(response.data.products);
+                } else {
+                    console.error('Invalid AJAX response structure:', response);
+                    displayNoProductsMessage('Niepoprawna odpowiedź z serwera.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading recommended products:', error);
+                console.error('XHR status:', status);
+                console.error('XHR response text:', xhr.responseText);
+                
+                // Try to parse error response if it's JSON
+                let errorMessage = 'Wystąpił błąd podczas ładowania rekomendowanych produktów.';
+                try {
+                    const jsonResponse = JSON.parse(xhr.responseText);
+                    if (jsonResponse && jsonResponse.data && jsonResponse.data.message) {
+                        errorMessage = jsonResponse.data.message;
+                    }
+                } catch(e) {
+                    // Not JSON or parsing failed, use default message
+                }
+                
+                displayNoProductsMessage(errorMessage);
+            },
+            complete: function() {
+                // Hide loading spinner
+                $('.loading-spinner', $container).hide();
+                $productsList.show();
+            }
+        });
+    }
+    
+    /**
+     * Display recommended products in a table
+     * 
+     * @param {Array} products Array of product objects
+     */
+    function displayRecommendedProducts(products) {
+        const $productsList = $('#recommended-products-list');
+        $productsList.empty();
+        
+        console.log('Displaying recommended products:', products);
+        
+        if (!products || products.length === 0) {
+            displayNoProductsMessage();
+            return;
+        }
+        
+        // Create table
+        const $table = $('<table class="recommended-products-table"></table>');
+        const $thead = $('<thead></thead>');
+        const $tbody = $('<tbody></tbody>');
+        
+        // Add table header
+        $thead.append(`
+            <tr>
+                <th>Zdjęcie</th>
+                <th>Nazwa produktu</th>
+                <th>Cena</th>
+            </tr>
+        `);
+        
+        // Add products to table
+        products.forEach(function(product) {
+            try {
+                const $row = $('<tr></tr>');
+                
+                // Handle possible missing data with defaults
+                const imageContent = product.image || '<div class="no-image">Brak zdjęcia</div>';
+                const productName = product.name || 'Produkt bez nazwy';
+                const productUrl = product.url || '#';
+                const productPrice = product.price || '-';
+                
+                $row.append(`<td>${imageContent}</td>`);
+                $row.append(`<td><a href="${productUrl}" target="_blank">${productName}</a></td>`);
+                $row.append(`<td>${productPrice}</td>`);
+                
+                $tbody.append($row);
+            } catch (err) {
+                console.error('Error displaying product:', err, product);
+            }
+        });
+        
+        // Assemble table
+        $table.append($thead);
+        $table.append($tbody);
+        $productsList.append($table);
+        
+        // Add a helpful message
+        $productsList.append('<p class="products-note">Powyższe produkty są rekomendowane na podstawie wybranych opcji formularza.</p>');
+    }
+    
+    /**
+     * Display a message when no products are available
+     * 
+     * @param {string} customMessage Optional custom message
+     */
+    function displayNoProductsMessage(customMessage) {
+        const $container = $('#recommended-products-container');
+        const $productsList = $('#recommended-products-list');
+        
+        // Hide loading spinner if it's visible
+        $('.loading-spinner', $container).hide();
+        
+        const message = customMessage || 'Brak rekomendowanych produktów dla wybranych opcji.';
+        $productsList.html(`<div class="no-products-message">${message}</div>`).show();
+        
+        console.log('Displaying no products message:', message);
+    }
 })(jQuery);

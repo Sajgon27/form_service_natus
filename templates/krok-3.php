@@ -46,9 +46,27 @@ defined('ABSPATH') || exit;
             <p>
                 <?php _e('Koszt dojazdu oraz dodatkowych materiałów eksploatacyjnych nie jest wliczony w cenę.', 'serwis-natu'); ?>
             </p>
-            <div class="form-field">
-                <label for="price_comments"><?php _e('Dodatkowe uwagi dotyczące wyceny', 'serwis-natu'); ?></label>
-                <textarea id="price_comments" name="price_comments" rows="3"></textarea>
+        </div>
+        
+        <div class="form-section">
+            <h3><?php _e('Lista rekomendowanych produktów', 'serwis-natu'); ?></h3>
+            <div class="form-field checkbox-field">
+                <label for="recommended_products_checkbox">
+                    <input type="checkbox" id="recommended_products_checkbox" name="recommended_products" value="1">
+                    <?php _e('Proszę o przygotowanie listy rekomendowanych produktów do mojego akwarium', 'serwis-natu'); ?>
+                </label>
+                <p class="field-description">
+                    <?php _e('Zaznacz tę opcję, jeśli chcesz otrzymać listę produktów polecanych do Twojego akwarium (np. nawozy, media filtracyjne, preparaty).', 'serwis-natu'); ?>
+                </p>
+            </div>
+            
+            <!-- Recommended products container will be populated by JavaScript -->
+            <div id="recommended-products-container" style="display: none;">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <?php _e('Przygotowujemy rekomendacje produktów...', 'serwis-natu'); ?>
+                </div>
+                <div id="recommended-products-list"></div>
             </div>
         </div>
     </div>
