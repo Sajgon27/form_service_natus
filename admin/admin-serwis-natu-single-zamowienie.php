@@ -300,13 +300,27 @@ function display_order_detail_page()
     // Order actions section
     echo '<div class="order-actions">';
     echo '<a class="button button-secondary" href="' . admin_url('admin.php?page=aquarium_orders') . '">Powrót do listy</a>';
-    echo ' <a class="button button-primary" href="mailto:' . esc_attr($order['client_email']) . '?subject=' . urlencode('Zamówienie #' . $order['id']) . '">Wyślij email do klienta</a>';
+    echo ' <a class="button button-primary" id="send-email-to-client" data-order-id="' . esc_attr($order['id']) . '" data-client-email="' . esc_attr($order['client_email']) . '">Wyślij email do klienta</a>';
 
     echo '</div>';
+    
+    // Create email modal
+    echo '<div id="email-modal" class="email-modal">';
+    echo '<div class="email-modal-content">';
+    echo '<span class="email-modal-close">&times;</span>';
+    echo '<h2>Wyślij wiadomość do klienta</h2>';
+    echo '<div class="email-form">';
+    echo '<p>Wiadomość zostanie wysłana na adres: <strong>' . esc_html($order['client_email']) . '</strong></p>';
+    echo '<textarea id="email-message" rows="10" placeholder="Wpisz wiadomość do klienta..."></textarea>';
+    echo '<div id="email-status"></div>';
+    echo '<button id="send-email-button" class="button button-primary">Wyślij</button>';
+    echo '</div>'; // close email-form
+    echo '</div>'; // close email-modal-content
+    echo '</div>'; // close email-modal
 
     echo '</div>'; // Close wrap
 
-    // Add JavaScript for image handling
+    // Add JavaScript for image handling and email modal
 ?>
     <script type="text/javascript">
         jQuery(document).ready(function($) {
@@ -359,6 +373,79 @@ function display_order_detail_page()
                     },
                     error: function() {
                         $message.html('<div class="status-error">Błąd połączenia. Spróbuj ponownie.</div>');
+                    }
+                });
+            });
+            
+            // Email Modal functionality
+            var modal = $('#email-modal');
+            var btn = $('#send-email-to-client');
+            var span = $('.email-modal-close');
+            var sendBtn = $('#send-email-button');
+            var statusDiv = $('#email-status');
+            
+            // Open modal when button is clicked
+            btn.click(function() {
+                modal.css('display', 'block');
+            });
+            
+            // Close modal when X is clicked
+            span.click(function() {
+                modal.css('display', 'none');
+                $('#email-message').val('');
+                statusDiv.html('');
+            });
+            
+            // Close modal when clicking outside of it
+            $(window).click(function(e) {
+                if ($(e.target).is(modal)) {
+                    modal.css('display', 'none');
+                    $('#email-message').val('');
+                    statusDiv.html('');
+                }
+            });
+            
+            // Handle send email button click
+            sendBtn.click(function() {
+                var message = $('#email-message').val();
+                if (!message.trim()) {
+                    statusDiv.html('<div class="status-error">Wiadomość nie może być pusta</div>');
+                    return;
+                }
+                
+                var orderId = btn.data('order-id');
+                
+                // Show loading status
+                statusDiv.html('<div class="status-loading">Wysyłanie wiadomości...</div>');
+                sendBtn.prop('disabled', true);
+                
+                // Send AJAX request
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'send_custom_email_to_client',
+                        order_id: orderId,
+                        message: message,
+                        security: '<?php echo wp_create_nonce("send_email_to_client_nonce"); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            statusDiv.html('<div class="status-success">Wiadomość została wysłana!</div>');
+                            setTimeout(function() {
+                                modal.css('display', 'none');
+                                $('#email-message').val('');
+                                statusDiv.html('');
+                                sendBtn.prop('disabled', false);
+                            }, 2000);
+                        } else {
+                            statusDiv.html('<div class="status-error">Błąd: ' + (response.data || 'Nie udało się wysłać wiadomości') + '</div>');
+                            sendBtn.prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        statusDiv.html('<div class="status-error">Błąd połączenia. Spróbuj ponownie.</div>');
+                        sendBtn.prop('disabled', false);
                     }
                 });
             });
@@ -433,6 +520,75 @@ function display_order_detail_page()
         }
         .status-error {
             color: #dc3232;
+        }
+        
+        /* Email modal styles */
+        .email-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .email-modal-content {
+            background-color: #f9f9f9;
+            margin: 10% auto;
+            padding: 30px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 60%;
+            max-width: 700px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        .email-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .email-modal-close:hover {
+            color: #555;
+        }
+        
+        .email-form {
+            margin-top: 20px;
+        }
+        
+        #email-message {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        #email-status {
+            margin: 10px 0;
+            min-height: 24px;
+        }
+        
+        #send-email-button {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+        
+        #send-email-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
     </style>
 <?php

@@ -22,6 +22,7 @@ define('SERWIS_NATU_FILE', __FILE__);
 
 // Include required files
 require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu.php';
+require_once SERWIS_NATU_PATH . 'includes/polish-date-helper.php';
 
 // Initialize the plugin
 function serwis_natu_init()
@@ -116,4 +117,93 @@ function serwis_natu_fix_endpoints() {
     update_option('serwis_natu_needs_rewrite_flush', false);
     
     return true;
+}
+
+/**
+ * Register AJAX handlers
+ */
+add_action('wp_ajax_send_custom_email_to_client', 'serwis_natu_send_custom_email_to_client');
+
+/**
+ * AJAX handler for sending custom emails to clients
+ */
+function serwis_natu_send_custom_email_to_client() {
+    // Verify security nonce
+    check_ajax_referer('send_email_to_client_nonce', 'security');
+    
+    // Check permissions
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Nie masz uprawnień do wykonania tej operacji.');
+        return;
+    }
+    
+    // Get data from request
+    $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+    $message = isset($_POST['message']) ? wp_kses_post($_POST['message']) : '';
+    
+    if ($order_id <= 0) {
+        wp_send_json_error('Nieprawidłowy identyfikator zamówienia.');
+        return;
+    }
+    
+    // Get order data from database
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'serwis_natu_orders';
+    $order = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $order_id), ARRAY_A);
+    
+    if (!$order) {
+        wp_send_json_error('Zamówienie nie zostało znalezione.');
+        return;
+    }
+    
+    // Parse aquariums data
+    $aquariums = $order['aquariums'];
+    if (is_string($aquariums)) {
+        $aquariums = json_decode($aquariums, true);
+    }
+    
+    // Prepare data for the email template
+    $email_data = array(
+        'client_first_name' => $order['client_first_name'],
+        'client_last_name' => $order['client_last_name'],
+        'client_email' => $order['client_email'],
+        'client_phone' => $order['client_phone'],
+        'aquarium_address' => $order['aquarium_address'],
+        'preferred_date' => $order['preferred_date'],
+        'tryb_wspolpracy' => $order['cooperative_mode'],
+        'cena' => $order['total_price'],
+        'created_at' => $order['created_at']
+    );
+    
+    // Start output buffering to capture the email template output
+    ob_start();
+    
+    // Make variables available to the template
+    $dane = $email_data;
+    $zamowienie_id = $order_id;
+    $custom_message = $message;
+    
+    // Include the custom email template
+    include_once(SERWIS_NATU_PATH . 'templates/emails/email-admin-to-client.php');
+    
+    // Get the email content from the buffer
+    $email_content = ob_get_clean();
+    
+    // Email headers
+    $headers = array(
+        'Content-Type: text/html; charset=UTF-8',
+        'From: Natuscape <sklep@natuscape.pl>'
+    );
+    
+    // Send the email
+    $subject = sprintf(__('Wiadomość dt. usługi serwisowej #%d', 'serwis-natu'), $order_id);
+    $sent = wp_mail($order['client_email'], $subject, $email_content, $headers);
+    
+    if ($sent) {
+        wp_send_json_success(array(
+            'message' => 'Wiadomość została pomyślnie wysłana.'
+        ));
+    } else {
+        wp_send_json_error('Nie udało się wysłać wiadomości. Proszę spróbować ponownie.');
+    }
 }

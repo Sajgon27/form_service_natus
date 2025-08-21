@@ -1,6 +1,6 @@
 <?php
 /**
- * Szablon e-maila potwierdzającego zamówienie usługi serwisowej
+ * Szablon e-maila od administratora do klienta
  */
 
 // Zabezpieczenie bezpośredniego dostępu
@@ -8,10 +8,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Dane zamówienia dostępne w zmiennych:
+// Dane dostępne w zmiennych:
 // $dane - dane klienta i podstawowe informacje
 // $zamowienie_id - ID zamówienia
 // $aquariums - dane akwariów
+// $custom_message - wiadomość od administratora
 ?>
 <!DOCTYPE html>
 <html>
@@ -19,7 +20,7 @@ if (!defined('ABSPATH')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo __('Potwierdzenie zamówienia usługi serwisowej', 'serwis-natu'); ?></title>
+    <title><?php echo __('Wiadomość dt. usługi serwisowej', 'serwis-natu'); ?></title>
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -134,26 +135,33 @@ if (!defined('ABSPATH')) {
         .instructions li {
             margin-bottom: 8px;
         }
+        
+        .admin-message {
+            background-color: #fff;
+            padding: 15px;
+            border-left: 4px solid #FF8C00;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <div class="header">
-            <h1><?php echo __('Potwierdzenie zamówienia usługi serwisowej', 'serwis-natu'); ?></h1>
+            <h1><?php echo __('Wiadomość dt. usługi serwisowej', 'serwis-natu'); ?></h1>
         </div>
 
         <div class="content">
-            <p><?php echo sprintf(__('Witaj %s,', 'serwis-natu'), $dane['imie'] . ' ' . $dane['nazwisko']); ?></p>
-
-            <p><?php echo __('Dziękujemy za złożenie zamówienia na usługę serwisu akwarystycznego. Poniżej znajdziesz szczegóły Twojego zamówienia:', 'serwis-natu'); ?></p>
+            <div class="admin-message">
+                <?php echo wpautop(wp_kses_post($custom_message)); ?>
+            </div>
 
             <div class="section">
                 <h2><?php echo __('Szczegóły zamówienia', 'serwis-natu'); ?></h2>
                 <p><strong><?php echo __('Numer zamówienia:', 'serwis-natu'); ?></strong> #<?php echo $zamowienie_id; ?></p>
                 <p><strong><?php echo __('Data zamówienia:', 'serwis-natu'); ?></strong> <?php 
                     // Format date in Polish
-                    echo serwis_natu_format_polish_date(current_time('timestamp')); 
+                    echo serwis_natu_format_polish_date($dane['created_at']);
                 ?></p>
             </div>
 
@@ -201,13 +209,17 @@ if (!defined('ABSPATH')) {
                         <p><strong><?php echo __('Dodatkowe informacje:', 'serwis-natu'); ?></strong> <?php echo $akw['inne']; ?></p>
                         <?php endif; ?>
                         
-                        <?php if (!empty($akw['extra_services'])): ?>
+                        <?php if (!empty($akw['Dodatkowe usługi'])): ?>
                         <p><strong><?php echo __('Usługi dodatkowe:', 'serwis-natu'); ?></strong></p>
                         <ul>
-                            <?php foreach($akw['extra_services'] as $service): ?>
+                            <?php foreach($akw['Dodatkowe usługi'] as $service): ?>
                             <li><?php echo $service; ?></li>
                             <?php endforeach; ?>
                         </ul>
+                        <?php endif; ?>
+                        
+                        <?php if (!empty($akw['Dopasowany pakiet'])): ?>
+                        <p><strong><?php echo __('Dopasowany pakiet:', 'serwis-natu'); ?></strong> <?php echo $akw['Dopasowany pakiet']; ?></p>
                         <?php endif; ?>
                     </div>
                     <?php endforeach; ?>
@@ -215,6 +227,7 @@ if (!defined('ABSPATH')) {
                 <p><?php echo __('Brak szczegółowych informacji o akwariach.', 'serwis-natu'); ?></p>
                 <?php endif; ?>
 
+                <?php if (!empty($dane['cena'])): ?>
                 <table>
                     <tr>
                         <th><?php echo __('Pozycja', 'serwis-natu'); ?></th>
@@ -230,40 +243,18 @@ if (!defined('ABSPATH')) {
                     </tr>
                 </table>
                 <p><em><?php echo __('Uwaga: Ostateczna cena może się różnić po ocenie stanu akwarium przez serwisanta.', 'serwis-natu'); ?></em></p>
+                <?php endif; ?>
             </div>
 
             <div class="section">
                 <h2><?php echo __('Dane kontaktowe', 'serwis-natu'); ?></h2>
-                <p><strong><?php echo __('Imię i nazwisko:', 'serwis-natu'); ?></strong> <?php echo $dane['imie'] . ' ' . $dane['nazwisko']; ?></p>
-                <p><strong><?php echo __('Email:', 'serwis-natu'); ?></strong> <?php echo $dane['email']; ?></p>
-                <p><strong><?php echo __('Telefon:', 'serwis-natu'); ?></strong> <?php echo $dane['telefon']; ?></p>
-                <p><strong><?php echo __('Adres:', 'serwis-natu'); ?></strong> <?php echo $dane['adres']; ?></p>
+                <p><strong><?php echo __('Imię i nazwisko:', 'serwis-natu'); ?></strong> <?php echo $dane['client_first_name'] . ' ' . $dane['client_last_name']; ?></p>
+                <p><strong><?php echo __('Email:', 'serwis-natu'); ?></strong> <?php echo $dane['client_email']; ?></p>
+                <p><strong><?php echo __('Telefon:', 'serwis-natu'); ?></strong> <?php echo $dane['client_phone']; ?></p>
+                <p><strong><?php echo __('Adres:', 'serwis-natu'); ?></strong> <?php echo $dane['aquarium_address']; ?></p>
                 <p><strong><?php echo __('Preferowany termin:', 'serwis-natu'); ?></strong> <?php 
-                    echo serwis_natu_format_polish_date($dane['preferowany_termin']); 
+                    echo serwis_natu_format_polish_date($dane['preferred_date']); 
                 ?></p>
-            </div>
-
-            <div class="section">
-                <h2><?php echo __('Instrukcja przygotowania do wizyty', 'serwis-natu'); ?></h2>
-                <div class="instructions">
-                    <ol>
-                        <li><?php echo __('Zapewnij łatwy dostęp do akwarium z przodu i z góry.', 'serwis-natu'); ?></li>
-                        <li><?php echo __('Odłącz urządzenia elektryczne, które mogą przeszkadzać (oświetlenie zewnętrzne, pokrywy).', 'serwis-natu'); ?></li>
-                        <li><?php echo __('Przygotuj wiadra lub pojemniki na wodę (jeśli posiadasz).', 'serwis-natu'); ?></li>
-                        <li><?php echo __('Jeśli możliwe, przygotuj wcześniej wodę do podmiany (odstać, uzdatnić).', 'serwis-natu'); ?></li>
-                        <li><?php echo __('Zabezpiecz miejsce wokół akwarium przed możliwym zachlapaniem.', 'serwis-natu'); ?></li>
-                    </ol>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2><?php echo __('Co dalej?', 'serwis-natu'); ?></h2>
-                <p><?php echo __('Nasz przedstawiciel skontaktuje się z Tobą w ciągu 24 godzin w celu potwierdzenia terminu wizyty.', 'serwis-natu'); ?></p>
-                <p><?php echo __('Jeśli masz jakiekolwiek pytania, możesz się z nami skontaktować:', 'serwis-natu'); ?></p>
-                <ul>
-                    <li><?php echo __('Telefonicznie: 530 072 247', 'serwis-natu'); ?></li>
-                    <li><?php echo __('E-mail: sklep@natuscape.pl', 'serwis-natu'); ?></li>
-                </ul>
             </div>
         </div>
 
