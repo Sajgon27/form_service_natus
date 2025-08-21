@@ -142,8 +142,8 @@ class Serwis_Natu
     {
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-package-recommender.php';
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-zamowienia.php';
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-single-zamowienie.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-zamowienia.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-single-zamowienie.php';
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-recommended-products.php';
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-my-account.php';
     }
@@ -155,8 +155,8 @@ class Serwis_Natu
     {
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-admin.php';
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-zamowienia.php';
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-single-zamowienie.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-zamowienia.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-single-zamowienie.php';
 
         $this->admin = new Serwis_Natu_Admin();
         $this->extra_services = new Serwis_Natu_Extra_Services();
@@ -393,7 +393,7 @@ function handle_submit_order()
     // Get the order ID (last inserted ID)
     $order_id = $wpdb->insert_id;
     
-    // Send confirmation email to customer
+        // Send confirmation email to customer and notification to admin
     if ($insert_result && $order_id) {
         // Prepare data for the email template
         $email_data = array(
@@ -407,35 +407,53 @@ function handle_submit_order()
             'cena' => isset($data['total_cost']) ? floatval($data['total_cost']) : 0,
         );
         
-        // Start output buffering to capture the email template output
-        ob_start();
-        
-        // Make variables available to the template
-        $dane = $email_data;
-        $zamowienie_id = $order_id;
-        $aquariums = $data['akw']; // Pass aquarium data to the template
-        
-        // Include the email template
-        include_once(SERWIS_NATU_PATH . 'templates/emails/email-order-confirmation.php');
-        
-        // Get the email content from the buffer
-        $email_content = ob_get_clean();
-        
         // Email headers
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
             'From: Natuscape <sklep@natuscape.pl>'
         );
         
-        // Send the email
-        $subject = sprintf(__('Potwierdzenie zamówienia usługi serwisowej #%d', 'serwis-natu'), $order_id);
-        $sent = wp_mail($data['client_email'], $subject, $email_content, $headers);
+        // Variables shared by both emails
+        $dane = $email_data;
+        $zamowienie_id = $order_id;
+        $aquariums = $data['akw']; // Pass aquarium data to the template
         
-        // Log email sending status
-        if (!$sent) {
-            error_log('Failed to send confirmation email for order #' . $order_id);
+        // 1. Send confirmation email to customer
+        // Start output buffering
+        ob_start();
+        
+        // Include the customer email template
+        include_once(SERWIS_NATU_PATH . 'templates/emails/email-order-confirmation.php');
+        
+        // Get the customer email content
+        $customer_email_content = ob_get_clean();
+        
+        // Send email to customer
+        $customer_subject = sprintf(__('Potwierdzenie zamówienia usługi serwisowej #%d', 'serwis-natu'), $order_id);
+        $customer_sent = wp_mail($data['client_email'], $customer_subject, $customer_email_content, $headers);
+        
+        // Log customer email sending status
+        if (!$customer_sent) {
+            error_log('Failed to send confirmation email to customer for order #' . $order_id);
         }
-    }
-
-    wp_send_json_success('Order saved successfully!');
+        
+        // 2. Send notification email to admin
+        // Start output buffering again
+        ob_start();
+        
+        // Include the admin notification template
+        include_once(SERWIS_NATU_PATH . 'templates/emails/email-admin-notification.php');
+        
+        // Get the admin email content
+        $admin_email_content = ob_get_clean();
+        
+        // Send email to admin
+        $admin_subject = sprintf(__('Nowe zamówienie usługi serwisowej #%d', 'serwis-natu'), $order_id);
+        $admin_sent = wp_mail('szymon.mudrak@gmail.com', $admin_subject, $admin_email_content, $headers);
+        
+        // Log admin email sending status
+        if (!$admin_sent) {
+            error_log('Failed to send notification email to admin for order #' . $order_id);
+        }
+    }    wp_send_json_success('Order saved successfully!');
 }

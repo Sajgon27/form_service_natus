@@ -67,6 +67,7 @@ $sql = "CREATE TABLE $table_name (
     aquariums LONGTEXT NULL,         -- JSON {1: {details, extra_services: []}, 2: {...}}
     total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
     cooperative_mode VARCHAR(100) NOT NULL,
+    status ENUM('Potwierdzone','Anulowane','Oczekujące') NOT NULL DEFAULT 'Oczekujące',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY user_id (user_id) 

@@ -21,7 +21,7 @@ defined('ABSPATH') || exit;
         <div class="radio-options">
             <div class="radio-option">
                 <label class="sa-radio-label" for="jednorazowa_usluga">
-                    <input class="sa-radio" type="radio" id="jednorazowa_usluga" name="tryb_wspolpracy" value="jednorazowa" checked>
+                    <input data-text="Jednorazowa usługa serwisowa" class="sa-radio" type="radio" id="jednorazowa_usluga" name="tryb_wspolpracy" value="jednorazowa" checked>
 
                     <span class="sa-radio-text"><?php _e('Jednorazowa usługa serwisowa', 'serwis-natu'); ?></span>
                     <span class="tooltip-icon" data-tooltip="jednorazowa_usluga">?</span>
@@ -30,7 +30,7 @@ defined('ABSPATH') || exit;
 
             <div class="radio-option">
                 <label class="sa-radio-label"  for="pakiet_wielorazowy">
-                <input class="sa-radio" type="radio" id="pakiet_wielorazowy" name="tryb_wspolpracy" value="wielorazowy">
+                <input data-text="Pakiet wielorazowy (abonamentowy)" class="sa-radio" type="radio" id="pakiet_wielorazowy" name="tryb_wspolpracy" value="wielorazowy">
 
                     <span class="sa-radio-text"><?php _e('Pakiet wielorazowy (abonamentowy)', 'serwis-natu'); ?></span>
                     <span class="tooltip-icon" data-tooltip="pakiet_wielorazowy">?</span>
@@ -39,7 +39,7 @@ defined('ABSPATH') || exit;
 
             <div class="radio-option">
                 <label class="sa-radio-label"  for="uslugi_dodatkowe">
-                <input class="sa-radio" type="radio" id="uslugi_dodatkowe" name="tryb_wspolpracy" value="dodatkowe">
+                <input data-text="Usługi dodatkowe" class="sa-radio" type="radio" id="uslugi_dodatkowe" name="tryb_wspolpracy" value="dodatkowe">
 
                     <span class="sa-radio-text"><?php _e('Usługi dodatkowe', 'serwis-natu'); ?></span>
                     <span class="tooltip-icon" data-tooltip="uslugi_dodatkowe">?</span>

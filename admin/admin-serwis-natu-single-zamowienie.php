@@ -1,0 +1,439 @@
+<?php
+
+add_action('admin_menu', 'register_order_detail_page');
+
+// AJAX handler for updating order status
+add_action('wp_ajax_update_order_status', 'serwis_natu_update_order_status');
+
+function serwis_natu_update_order_status() {
+    // Check nonce for security
+    check_ajax_referer('update_order_status_nonce', 'security');
+    
+    // Check if user has permission
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Nie masz uprawnień do wykonania tej operacji.');
+        return;
+    }
+    
+    // Get and validate parameters
+    $order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+    $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+    
+    // Validate status
+    $valid_statuses = array('Oczekujące', 'Potwierdzone', 'Anulowane');
+    if (!in_array($status, $valid_statuses)) {
+        wp_send_json_error('Nieprawidłowy status.');
+        return;
+    }
+    
+    // Get database table
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'serwis_natu_orders';
+    
+    // Update the order status
+    $result = $wpdb->update(
+        $table_name,
+        array('status' => $status),
+        array('id' => $order_id),
+        array('%s'),
+        array('%d')
+    );
+    
+    if ($result !== false) {
+        wp_send_json_success(array('status' => $status));
+    } else {
+        wp_send_json_error('Nie udało się zaktualizować statusu zamówienia.');
+    }
+}
+
+function register_order_detail_page()
+{
+    // Tworzymy podstronę pod menu 'aquarium_orders'
+    add_submenu_page(
+        'aquarium_orders',            // parent slug
+        'Szczegóły zamówienia',       // page title
+        'Szczegóły zamówienia',       // menu title (będzie ukryty)
+        'manage_options',             // capability
+        'aquarium_order_detail',      // menu slug
+        'display_order_detail_page'   // callback
+    );
+}
+
+// Ukrycie subpage z menu, aby nie było widoczne
+add_action('admin_head', function () {
+    global $submenu;
+    if (isset($submenu['aquarium_orders'])) {
+        foreach ($submenu['aquarium_orders'] as $index => $item) {
+            if ($item[2] === 'aquarium_order_detail') {
+                unset($submenu['aquarium_orders'][$index]);
+            }
+        }
+    }
+});
+
+
+
+function display_order_detail_page()
+{
+    // Check user capability
+    if (!current_user_can('manage_options')) {
+        wp_die(__('Nie masz uprawnień do przeglądania tej strony.', 'serwis-natu'));
+    }
+
+    if (!isset($_GET['id'])) {
+        echo '<div class="notice notice-error"><p>Brak ID zamówienia</p></div>';
+        return;
+    }
+
+    $id = intval($_GET['id']);
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'serwis_natu_orders';
+
+    $order = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id), ARRAY_A);
+
+    if (!$order) {
+        echo '<div class="notice notice-error"><p>Zamówienie nie znalezione</p></div>';
+        return;
+    }
+
+    // Get aquariums data - use json_decode if data is JSON string, otherwise use as is
+    $aquariums = $order['aquariums'];
+    if (is_string($aquariums)) {
+        $aquariums = json_decode($aquariums, true);
+    }
+
+
+    echo '<div class="wrap order-detail-container">';
+
+    echo '<div class="order-detail-header">';
+    echo '<div>';
+    echo '<h1>Szczegóły zamówienia #' . esc_html($order['id']) . '</h1>';
+    echo '<p class="order-date">Data złożenia: ' . date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($order['created_at'])) . '</p>';
+    echo '</div>';
+    
+    // Get current status or default to 'Oczekujące'
+    $current_status = isset($order['status']) ? $order['status'] : 'Oczekujące';
+    
+    // Add status class for styling
+    $status_class = strtolower(remove_accents($current_status));
+    echo '<div class="order-status status-' . esc_attr($status_class) . '">' . esc_html($current_status) . '</div>';
+    
+    echo '</div>';
+
+    echo '<div class="order-detail-columns">';
+
+    // Left column
+    echo '<div class="order-detail-column">';
+
+    // Client information box
+    echo '<div class="order-info-box">';
+    echo '<h2>Dane klienta</h2>';
+    echo '<div class="client-details">';
+    echo '<div class="label">Imię:</div><div>' . esc_html($order['client_first_name']) . '</div>';
+    echo '<div class="label">Nazwisko:</div><div>' . esc_html($order['client_last_name']) . '</div>';
+    echo '<div class="label">Email:</div><div>' . esc_html($order['client_email']) . '</div>';
+    echo '<div class="label">Telefon:</div><div>' . esc_html($order['client_phone']) . '</div>';
+    echo '<div class="label">Adres akwarium:</div><div>' . esc_html($order['aquarium_address']) . '</div>';
+    echo '<div class="label">Preferowana data:</div><div>' . esc_html($order['preferred_date']) . '</div>';
+    echo '</div>';
+    echo '</div>';
+
+    // Status selection box
+    echo '<div class="order-info-box">';
+    echo '<h2>Status zamówienia</h2>';
+    echo '<div id="status-update-container">';
+    
+    // Get current status or default to 'Oczekujące'
+    $current_status = isset($order['status']) ? $order['status'] : 'Oczekujące';
+    $status_options = array('Oczekujące', 'Potwierdzone', 'Anulowane');
+    
+    // Create the status select field
+    echo '<select id="order-status-select" data-order-id="' . esc_attr($order['id']) . '">';
+    foreach ($status_options as $status) {
+        echo '<option value="' . esc_attr($status) . '" ' . selected($status, $current_status, false) . '>' . esc_html($status) . '</option>';
+    }
+    echo '</select>';
+    
+    echo '<div id="status-update-message"></div>';
+    echo '</div>'; // Close status-update-container
+    echo '</div>'; // Close order-info-box
+    
+    // Additional notes box
+    echo '<div class="order-info-box">';
+    echo '<h2>Uwagi dodatkowe</h2>';
+    echo '<p>' . (empty($order['additional_notes']) ? 'Brak uwag' : esc_html($order['additional_notes'])) . '</p>';
+    echo '</div>';
+
+    echo '</div>'; // End left column
+
+    // Right column
+    echo '<div class="order-detail-column">';
+
+    // Order Summary Stats
+    $aquariumCount = is_array($aquariums) ? count($aquariums) : 0;
+    $totalServices = 0;
+
+    if (is_array($aquariums)) {
+        foreach ($aquariums as $akw) {
+            foreach ($akw as $key => $value) {
+                if (is_array($value) && $key !== 'typ') {
+                    $totalServices += count($value);
+                }
+            }
+        }
+    }
+
+    // Display cooperative mode if available
+    if (!empty($order['cooperative_mode'])) {
+        echo '<div class="cooperative-mode"><strong>Tryb współpracy:</strong> ' . esc_html($order['cooperative_mode']) . '</div>';
+    }
+
+    // Aquariums and services box
+    echo '<div class="order-info-box">';
+    echo '<h2>Akwaria i usługi</h2>';
+
+    if ($aquariums && is_array($aquariums)) {
+        echo '<div class="aquarium-list">';
+
+        foreach ($aquariums as $akwId => $akw) {
+            echo '<div class="aquarium-item">';
+            echo '<h2>Akwarium #' . esc_html($akwId) . '</h2>';
+
+            // Display aquarium photo if available
+            if (isset($akw['photo_url'])) {
+                echo '<div class="aquarium-photo">';
+                echo '<a href="' . esc_url($akw['photo_url']) . '" target="_blank">';
+                echo '<img src="' . esc_url($akw['photo_url']) . '" alt="Zdjęcie akwarium #' . esc_attr($akwId) . '" title="Kliknij, aby powiększyć">';
+                echo '</a>';
+                echo '</div>';
+            }
+
+            // Create a two-column layout for aquarium details
+            echo '<div class="aquarium-details">';
+
+            $details = [];
+            $services = [];
+
+            foreach ($akw as $key => $value) {
+                // Organize data into details and services
+                if ($key == 'typ' || $key == 'wielkosc' || $key == 'parametry' || $key == 'glebokosc') {
+                    $details[$key] = $value;
+                } else if ($key != 'photo_url' && $key != 'photo_attachment_id') {
+                    $services[$key] = $value;
+                }
+            }
+
+      
+
+            // Display services
+            if (!empty($services)) {
+                echo '<div class="aquarium-services">';
+                
+                // First display package info if available
+                if (isset($services['Dopasowany pakiet'])) {
+                    echo '<div class="recommended-package">';
+                    echo '<h4>Dopasowany pakiet:</h4>';
+                    echo '<p class="package-name">' . esc_html($services['Dopasowany pakiet']) . '</p>';
+                    echo '</div>';
+                    
+                    // Remove these items so they don't show up again in the regular services list
+                    unset($services['Dopasowany pakiet']);
+                    unset($services['Cena pakietu']);
+                }
+
+                      // Display basic details first
+            echo '<div class="aquarium-basic-details">';
+            foreach ($details as $key => $value) {
+                // Display key without modification as we expect 'typ' to already be in the format we want
+                $display_key = $key;
+                
+                if (is_array($value)) {
+                    echo '<h4>' . esc_html($display_key) . ':</h4>';
+                    echo '<ul class="detail-list">';
+                    foreach ($value as $item) {
+                        echo '<li>' . esc_html($item) . '</li>';
+                    }
+                    echo '</ul>';
+                } else {
+                    echo '<h4>' . esc_html($display_key) . ':</h4> ' . esc_html($value) . '</p>';
+                }
+            }
+            echo '</div>';
+
+                foreach ($services as $key => $value) {
+                    // Format the key for display - ensure first letter is capitalized
+                    $display_key = $key;
+                    
+                    if (is_array($value)) {
+                        echo '<h4>' . esc_html($display_key) . ':</h4>';
+                        echo '<ul class="service-list">';
+                        foreach ($value as $item) {
+                            echo '<li>' . esc_html($item) . '</li>';
+                        }
+                        echo '</ul>';
+                    } else {
+                        echo '<h4>' . esc_html($display_key) . ':</h4> ' . esc_html($value) . '</p>';
+                    }
+                }
+                echo '</div>';
+            }
+
+            echo '</div>'; // End aquarium-details
+            echo '</div>'; // End aquarium-item
+        }
+
+        echo '</div>'; // End aquarium-list
+    } else {
+        echo '<p>Brak danych o akwariach.</p>';
+    }
+
+    echo '</div>'; // Close order-info-box
+    echo '</div>'; // Close right column
+
+    echo '</div>'; // Close order-detail-columns
+
+    // Display total price if available
+    if (!empty($order['total_price'])) {
+        echo '<div class="order-price">Łączna cena zamówienia: ' . number_format((float)$order['total_price'], 2, ',', ' ') . ' zł</div>';
+    }
+
+    // Order actions section
+    echo '<div class="order-actions">';
+    echo '<a class="button button-secondary" href="' . admin_url('admin.php?page=aquarium_orders') . '">Powrót do listy</a>';
+    echo ' <a class="button button-primary" href="mailto:' . esc_attr($order['client_email']) . '?subject=' . urlencode('Zamówienie #' . $order['id']) . '">Wyślij email do klienta</a>';
+
+    echo '</div>';
+
+    echo '</div>'; // Close wrap
+
+    // Add JavaScript for image handling
+?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Make images clickable with nice preview
+            $('.aquarium-photo img').click(function(e) {
+                e.preventDefault();
+                var imgUrl = $(this).attr('src');
+                window.open(imgUrl, '_blank');
+            });
+            
+            // Handle status change
+            $('#order-status-select').change(function() {
+                var $select = $(this);
+                var orderId = $select.data('order-id');
+                var newStatus = $select.val();
+                var $message = $('#status-update-message');
+                
+                // Show loading message
+                $message.html('<div class="status-loading">Aktualizowanie statusu...</div>');
+                
+                // Send AJAX request
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'update_order_status',
+                        order_id: orderId,
+                        status: newStatus,
+                        security: '<?php echo wp_create_nonce("update_order_status_nonce"); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Update the status display in the header
+                            var statusClass = newStatus.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            $('.order-status')
+                                .attr('class', 'order-status status-' + statusClass)
+                                .text(newStatus);
+                                
+                            // Show success message
+                            $message.html('<div class="status-success">Status zamówienia zaktualizowany!</div>');
+                            
+                            // Hide message after 3 seconds
+                            setTimeout(function() {
+                                $message.empty();
+                            }, 3000);
+                        } else {
+                            // Show error message
+                            $message.html('<div class="status-error">Błąd: ' + (response.data || 'Nie udało się zaktualizować statusu') + '</div>');
+                        }
+                    },
+                    error: function() {
+                        $message.html('<div class="status-error">Błąd połączenia. Spróbuj ponownie.</div>');
+                    }
+                });
+            });
+        });
+    </script>
+    <style type="text/css">
+        .recommended-package {
+            background-color: #f0f7ff;
+            border-left: 4px solid #2271b1;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+        .recommended-package h4 {
+            color: #2271b1;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .package-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+        .aquarium-details h4 {
+            margin-top: 15px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .service-list, .detail-list {
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        
+        /* Status styles */
+        .order-status {
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+        }
+        .status-oczekujace {
+            background-color: #f0ad4e;
+        }
+        .status-potwierdzone {
+            background-color: #5cb85c;
+        }
+        .status-anulowane {
+            background-color: #d9534f;
+        }
+        
+        /* Status select styling */
+        #order-status-select {
+            padding: 8px;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        /* Status messages */
+        #status-update-message {
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .status-loading {
+            color: #0073aa;
+        }
+        .status-success {
+            color: #46b450;
+        }
+        .status-error {
+            color: #dc3232;
+        }
+    </style>
+<?php
+}

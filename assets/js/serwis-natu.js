@@ -594,16 +594,27 @@
           data.total_cost = totalCost;
         }
 
-        // Merge extra_services into akw
+        // Get recommendations
+        const recommendations = window.serwisNatuRecommendations || [];
+        
+        // Merge extra_services into akw and add recommended packages
         for (let akwId in data.akw) {
+          // Add extra services with proper name
           if (data.extra_services && data.extra_services[akwId]) {
-            data.akw[akwId]["extra_services"] = data.extra_services[akwId];
+            data.akw[akwId]["Dodatkowe usługi"] = data.extra_services[akwId];
           } else {
-            data.akw[akwId]["extra_services"] = [];
+            data.akw[akwId]["Dodatkowe usługi"] = [];
+          }
+          
+          // Add recommended package information
+          const aquariumRecommendation = recommendations.find(rec => rec.aquariumIndex == akwId);
+          if (aquariumRecommendation && aquariumRecommendation.packageName) {
+            data.akw[akwId]["Dopasowany pakiet"] = aquariumRecommendation.packageName;
+            data.akw[akwId]["Cena pakietu"] = aquariumRecommendation.packagePrice;
           }
         }
 
-        // Optionally remove extra_services key
+        // Remove old keys as we've renamed and moved their data
         delete data.extra_services;
 
         console.log(data);
@@ -633,12 +644,12 @@
           contentType: false, // Let the browser set the content type for FormData
           success: function (response) {
             console.log(response);
-            alert("Zgłoszenie wysłane pomyślnie!");
-            location.reload();
+           // alert("Zgłoszenie wysłane pomyślnie!");
+           // location.reload();
           },
           error: function (err) {
             console.error(err);
-            alert("Błąd podczas wysyłania zgłoszenia.");
+           // alert("Błąd podczas wysyłania zgłoszenia.");
           },
         });
       }
@@ -849,9 +860,12 @@
    * @return {object} Form data
    */
   function getFormData() {
+    // Get selected tryb_wspolpracy element
+    const $selectedTryb = $('input[name="tryb_wspolpracy"]:checked');
+    
     const formData = {
-      tryb_wspolpracy:
-        $('input[name="tryb_wspolpracy"]:checked').val() || "jednorazowa",
+      tryb_wspolpracy: $selectedTryb.val() || "jednorazowa",
+      tryb_wspolpracy_text: $selectedTryb.data('text') || "Jednorazowa usługa serwisowa",
       ilosc_akwarium: $('input[name="ilosc_akwarium"]:checked').val() || "1",
       ilosc_wiecej: $("#ilosc_wiecej_input").val() || "3",
       akw: {},

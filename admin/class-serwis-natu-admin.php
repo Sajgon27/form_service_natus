@@ -88,7 +88,7 @@ class Serwis_Natu_Admin {
         );
         
         // Register hooks
-        add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_menu', array($this, 'add_admin_menu'),1);
         add_action('admin_init', array($this, 'register_settings'));
     }
 
@@ -98,12 +98,21 @@ class Serwis_Natu_Admin {
     public function add_admin_menu() {
         add_menu_page(
             __('Ustawienia Serwis Natu', 'serwis-natu'),
-            __('Serwis Natu', 'serwis-natu'),
+            __('Serwis', 'serwis-natu'),
             'manage_options',
             'serwis-natu-settings',
             array($this, 'render_settings_page'),
             'dashicons-admin-settings',
             100
+        );
+
+        add_submenu_page(
+            'serwis-natu-settings',
+            __('Ustawienia', 'serwis-natu'),
+            __('Ustawienia', 'serwis-natu'),
+            'manage_options',
+            'serwis-natu-settings',
+            array($this, 'render_settings_page'),
         );
     }
 

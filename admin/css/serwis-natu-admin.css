@@ -167,21 +167,21 @@ h3 {
 .aquarium-services {
   flex: 1;
   min-width: 250px;
-  padding: 0 10px;
+ 
 }
 .aquarium-item h4 {
   margin: 15px 0 5px 0;
+    text-transform: capitalize;
   color: #23282d;
   font-size: 1.1em;
 }
 .aquarium-item h5 {
   margin: 10px 0 5px 0;
+  text-transform: capitalize;
   color: #23282d;
   font-weight: 600;
 }
-.aquarium-item ul {
-  margin: 0 0 15px 20px;
-}
+
 .aquarium-item p {
   margin: 5px 0 10px 0;
 }
