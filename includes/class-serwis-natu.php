@@ -28,6 +28,13 @@ class Serwis_Natu
      * @var Serwis_Natu_Extra_Services
      */
     private $extra_services;
+    
+    /**
+     * My Account instance
+     *
+     * @var Serwis_Natu_My_Account
+     */
+    private $my_account;
 
     /**
      * Initialize the plugin
@@ -43,6 +50,14 @@ class Serwis_Natu
         if (is_admin()) {
             $this->init_admin();
         }
+        
+        // Initialize My Account integration if WooCommerce is active
+        if ($this->is_woocommerce_active()) {
+            $this->my_account = new Serwis_Natu_My_Account();
+            
+            // Force flush on init - important to fix 404 errors
+            add_action('init', array($this, 'force_flush_endpoints'), 99);
+        }
 
         // Register styles and scripts
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
@@ -53,6 +68,33 @@ class Serwis_Natu
         // Register AJAX handlers
         add_action('wp_ajax_get_package_recommendations', array($this, 'ajax_get_package_recommendations'));
         add_action('wp_ajax_nopriv_get_package_recommendations', array($this, 'ajax_get_package_recommendations'));
+    }
+    
+    /**
+     * Check if WooCommerce is active
+     *
+     * @return bool
+     */
+    private function is_woocommerce_active() {
+        return in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')));
+    }
+    
+    /**
+     * Force flush endpoints to fix 404 errors
+     * This is a more aggressive approach that runs on every page load if needed
+     */
+    public function force_flush_endpoints() {
+        if (get_option('serwis_natu_endpoint_fixed', false) === false) {
+            // Add the endpoint
+            add_rewrite_endpoint('historia-serwisowa', EP_ROOT | EP_PAGES);
+            
+            // Flush the rules
+            flush_rewrite_rules();
+            
+            // Mark as fixed
+            update_option('serwis_natu_endpoint_fixed', true);
+            update_option('serwis_natu_needs_rewrite_flush', false);
+        }
     }
 
     /**
@@ -103,6 +145,7 @@ class Serwis_Natu
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-zamowienia.php';
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-single-zamowienie.php';
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-recommended-products.php';
+        require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-my-account.php';
     }
 
     /**
@@ -230,9 +273,11 @@ class Serwis_Natu
 
 
 
+
 add_action('wp_ajax_submit_order', 'handle_submit_order');
 add_action('wp_ajax_nopriv_submit_order', 'handle_submit_order');
 
+// Function to handle final service submit
 function handle_submit_order()
 {
     global $wpdb;
@@ -242,7 +287,7 @@ function handle_submit_order()
     require_once(ABSPATH . 'wp-admin/includes/media.php');
     require_once(ABSPATH . 'wp-admin/includes/image.php');
 
-    $table_name = $wpdb->prefix . 'serwis_natu_orders'; // replace with your table
+    $table_name = $wpdb->prefix . 'serwis_natu_orders'; 
 
     if (!isset($_POST['form_data'])) {
         wp_send_json_error('No data received');
@@ -303,32 +348,46 @@ function handle_submit_order()
     // Merge aquariums and extra_services already done in JS
     $aquariums_json = maybe_serialize($data['akw']); // store as LONGTEXT (JSON)
 
+    // Prepare order data
+    $order_data = array(
+        'client_first_name' => sanitize_text_field($data['client_first_name']),
+        'client_last_name'  => sanitize_text_field($data['client_last_name']),
+        'client_email'      => sanitize_email($data['client_email']),
+        'client_phone'      => sanitize_text_field($data['client_phone']),
+        'aquarium_address'  => sanitize_text_field($data['aquarium_address']),
+        'preferred_date'    => date('Y-m-d H:i:s', strtotime($data['preferred_date'])),
+        'additional_notes'  => sanitize_textarea_field($data['additional_notes']),
+        'aquariums'         => wp_json_encode($data['akw']),
+        'cooperative_mode'  => isset($data['tryb_wspolpracy']) ? sanitize_text_field($data['tryb_wspolpracy']) : '',
+        'total_price'       => isset($data['total_cost']) ? floatval($data['total_cost']) : 0
+    );
+
+    // Format strings for database columns
+    $format = array(
+        '%s', // client_first_name
+        '%s', // client_last_name
+        '%s', // client_email
+        '%s', // client_phone
+        '%s', // aquarium_address
+        '%s', // preferred_date
+        '%s', // additional_notes
+        '%s', // aquariums (JSON)
+        '%s', // cooperative_mode
+        '%f'  // total_price
+    );
+
+    // Check if user is logged in
+    if (is_user_logged_in()) {
+        // Add user ID to order data
+        $current_user_id = get_current_user_id();
+        $order_data['user_id'] = $current_user_id;
+        $format[] = '%d'; // Add format for user_id
+    }
+
     $insert_result = $wpdb->insert(
         $table_name,
-        array(
-            'client_first_name' => sanitize_text_field($data['client_first_name']),
-            'client_last_name'  => sanitize_text_field($data['client_last_name']),
-            'client_email'      => sanitize_email($data['client_email']),
-            'client_phone'      => sanitize_text_field($data['client_phone']),
-            'aquarium_address'  => sanitize_text_field($data['aquarium_address']),
-            'preferred_date'    => date('Y-m-d H:i:s', strtotime($data['preferred_date'])),
-            'additional_notes'  => sanitize_textarea_field($data['additional_notes']),
-            'aquariums'         => wp_json_encode($data['akw']),
-            'cooperative_mode'  => isset($data['tryb_wspolpracy']) ? sanitize_text_field($data['tryb_wspolpracy']) : '',
-            'total_price'       => isset($data['total_cost']) ? floatval($data['total_cost']) : 0
-        ),
-        array(
-            '%s', // client_first_name
-            '%s', // client_last_name
-            '%s', // client_email
-            '%s', // client_phone
-            '%s', // aquarium_address
-            '%s', // preferred_date
-            '%s', // additional_notes
-            '%s', // aquariums (JSON)
-            '%s', // cooperative_mode
-            '%f'  // total_price
-        )
+        $order_data,
+        $format
     );
     
     // Get the order ID (last inserted ID)

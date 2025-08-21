@@ -35,8 +35,6 @@ defined('ABSPATH') || exit;
         </div>
 
 
-
-
         <div class="serwis-natu-steps-container">
             <!-- Step 1 -->
             <div class="serwis-natu-step active" id="step-1">
