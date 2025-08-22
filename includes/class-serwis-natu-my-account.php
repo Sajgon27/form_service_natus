@@ -139,7 +139,6 @@ class Serwis_Natu_My_Account {
             echo '<th>' . esc_html__('ID', 'serwis-natu') . '</th>';
             echo '<th>' . esc_html__('Data zamówienia', 'serwis-natu') . '</th>';
             echo '<th>' . esc_html__('Preferowany termin', 'serwis-natu') . '</th>';
-            echo '<th>' . esc_html__('Adres', 'serwis-natu') . '</th>';
             echo '<th>' . esc_html__('Cena', 'serwis-natu') . '</th>';
             echo '<th>' . esc_html__('Akcje', 'serwis-natu') . '</th>';
             echo '</tr>';
@@ -151,80 +150,9 @@ class Serwis_Natu_My_Account {
                 echo '<td>' . esc_html($order->id) . '</td>';
                 echo '<td>' . esc_html(date_i18n(get_option('date_format'), strtotime($order->created_at))) . '</td>';
                 echo '<td>' . esc_html(date_i18n(get_option('date_format'), strtotime($order->preferred_date))) . '</td>';
-                echo '<td>' . esc_html($order->aquarium_address) . '</td>';
                 echo '<td>' . number_format((float)$order->total_price, 2, ',', ' ') . ' zł</td>';
                 echo '<td>';
-                echo '<a href="#" class="button view" data-order-id="' . esc_attr($order->id) . '">' . esc_html__('Szczegóły', 'serwis-natu') . '</a>';
-                echo '</td>';
-                echo '</tr>';
-                
-                // Hidden details container that will be shown/hidden via JavaScript
-                echo '<tr class="order-details-row" id="order-details-' . esc_attr($order->id) . '" style="display: none;">';
-                echo '<td colspan="6">';
-                echo '<div class="order-details-container">';
-                
-                // Customer details
-                echo '<div class="customer-details">';
-                echo '<h4>' . esc_html__('Dane klienta', 'serwis-natu') . '</h4>';
-                echo '<p><strong>' . esc_html__('Imię:', 'serwis-natu') . '</strong> ' . esc_html($order->client_first_name) . '</p>';
-                echo '<p><strong>' . esc_html__('Nazwisko:', 'serwis-natu') . '</strong> ' . esc_html($order->client_last_name) . '</p>';
-                echo '<p><strong>' . esc_html__('Email:', 'serwis-natu') . '</strong> ' . esc_html($order->client_email) . '</p>';
-                echo '<p><strong>' . esc_html__('Telefon:', 'serwis-natu') . '</strong> ' . esc_html($order->client_phone) . '</p>';
-                echo '</div>';
-                
-                // Aquarium details
-                $aquariums = json_decode($order->aquariums, true);
-                if ($aquariums && is_array($aquariums)) {
-                    echo '<div class="aquariums-details">';
-                    echo '<h4>' . esc_html__('Akwaria', 'serwis-natu') . '</h4>';
-                    
-                    foreach ($aquariums as $akw_id => $aquarium) {
-                        echo '<div class="aquarium-item">';
-                        echo '<h5>' . esc_html__('Akwarium #', 'serwis-natu') . esc_html($akw_id) . '</h5>';
-                        
-                        // Display aquarium photo if available
-                        if (isset($aquarium['photo_url'])) {
-                            echo '<div class="aquarium-photo">';
-                            echo '<img src="' . esc_url($aquarium['photo_url']) . '" alt="' . esc_attr__('Zdjęcie akwarium', 'serwis-natu') . '" />';
-                            echo '</div>';
-                        }
-                        
-                        echo '<div class="aquarium-properties">';
-                        if (isset($aquarium['typ'])) {
-                            echo '<p><strong>' . esc_html__('Typ:', 'serwis-natu') . '</strong> ' . esc_html($aquarium['typ']) . '</p>';
-                        }
-                        if (isset($aquarium['wielkosc'])) {
-                            echo '<p><strong>' . esc_html__('Wielkość:', 'serwis-natu') . '</strong> ' . esc_html($aquarium['wielkosc']) . '</p>';
-                        }
-                        echo '</div>';
-                        
-                        // Display additional services
-                        if (!empty($aquarium['uslugi']) && is_array($aquarium['uslugi'])) {
-                            echo '<div class="aquarium-services">';
-                            echo '<h6>' . esc_html__('Wybrane usługi', 'serwis-natu') . '</h6>';
-                            echo '<ul>';
-                            foreach ($aquarium['uslugi'] as $service) {
-                                echo '<li>' . esc_html($service) . '</li>';
-                            }
-                            echo '</ul>';
-                            echo '</div>';
-                        }
-                        
-                        echo '</div>'; // End of aquarium-item
-                    }
-                    
-                    echo '</div>'; // End of aquariums-details
-                }
-                
-                // Additional notes
-                if (!empty($order->additional_notes)) {
-                    echo '<div class="additional-notes">';
-                    echo '<h4>' . esc_html__('Uwagi dodatkowe', 'serwis-natu') . '</h4>';
-                    echo '<p>' . nl2br(esc_html($order->additional_notes)) . '</p>';
-                    echo '</div>';
-                }
-                
-                echo '</div>'; // End of order-details-container
+                echo '<a href="' . '/home?zamowienie=' . $order->id . '" class="button">' . esc_html__('Wyślij ponownie', 'serwis-natu') . '</a>';
                 echo '</td>';
                 echo '</tr>';
             }
@@ -232,37 +160,22 @@ class Serwis_Natu_My_Account {
             echo '</tbody>';
             echo '</table>';
             
-            // Add JavaScript to toggle details
+            // No JavaScript needed since we've removed the details toggle functionality
             ?>
-            <script type="text/javascript">
-            jQuery(document).ready(function($) {
-                $('.view').on('click', function(e) {
-                    e.preventDefault();
-                    var orderId = $(this).data('order-id');
-                    $('#order-details-' + orderId).toggle();
-                });
-            });
-            </script>
             <style>
-            .order-details-container {
-                padding: 15px;
-                background-color: #f8f8f8;
-                border: 1px solid #ddd;
-                margin: 10px 0;
+            .button {
+                background-color: #96BE8C;
+                color: white;
+                padding: 8px 16px;
+                text-decoration: none;
+                display: inline-block;
+                border-radius: 4px;
+                border: none;
+                cursor: pointer;
             }
-            .aquarium-item {
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 1px dashed #ddd;
-            }
-            .aquarium-item:last-child {
-                border-bottom: none;
-            }
-            .aquarium-photo img {
-                max-width: 200px;
-                height: auto;
-                margin: 10px 0;
-                border: 1px solid #ddd;
+            .button:hover {
+                background-color: #7AA06E;
+                color: white;
             }
             </style>
             <?php

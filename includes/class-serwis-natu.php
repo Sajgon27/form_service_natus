@@ -35,6 +35,13 @@ class Serwis_Natu
      * @var Serwis_Natu_My_Account
      */
     private $my_account;
+    
+    /**
+     * Form Populate instance
+     *
+     * @var Serwis_Natu_Form_Populate
+     */
+    private $form_populate;
 
     /**
      * Initialize the plugin
@@ -58,6 +65,9 @@ class Serwis_Natu
             // Force flush on init - important to fix 404 errors
             add_action('init', array($this, 'force_flush_endpoints'), 99);
         }
+        
+        // Initialize Form Populate functionality
+        $this->form_populate = new Serwis_Natu_Form_Populate();
 
         // Register styles and scripts
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
@@ -141,6 +151,7 @@ class Serwis_Natu
     private function include_files()
     {
         require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-package-recommender.php';
+        require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-form-populate.php';
         require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
         require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-zamowienia.php';
         require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-single-zamowienie.php';
