@@ -4,13 +4,12 @@
 
 .package-mapping-row {
   display: flex;
-  flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
 .package-mapping-column {
   flex: 1 1 250px;
-  margin-right: 20px;
+
   margin-bottom: 10px;
 }
 
@@ -38,9 +37,12 @@
 
 .package-mapping-column,
 .product-mapping-column {
-  flex: 1;
+  width: 50%;
+  display: flex;
+    flex-direction: column;
+    gap: 4px;
   min-width: 200px;
-  margin-right: 20px;
+
   margin-bottom: 10px;
 }
 
@@ -102,6 +104,7 @@ h3 {
 .order-detail-header {
   margin-bottom: 20px;
   padding-bottom: 10px;
+  padding-right: 15px;
   border-bottom: 1px solid #ccc;
   display: flex;
   justify-content: space-between;
@@ -265,4 +268,9 @@ h3 {
   .aquarium-details {
     display: block;
   }
+}
+
+
+.serwis_page_serwis-natu-extra-services .form-table th {
+    display: none;
 }

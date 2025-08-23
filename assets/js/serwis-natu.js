@@ -24,6 +24,9 @@
         .append($("#akwarium-1").clone().attr("id", "akwarium-template"))
         .appendTo("body");
     }
+    
+    // Setup clear form button functionality
+    setupClearButton();
 
     // Log if we found the template
     if ($("#template-akwarium").length > 0) {
@@ -287,7 +290,7 @@
       // If "Usługi dodatkowe" selected, only show "Inne potrzeby" checkboxes
       $(".akwarium-section .subsection").each(function () {
         const $subsection = $(this);
-        if (!$subsection.hasClass("inne-potrzeby")) {
+        if (!$subsection.hasClass("subsection-typ-zbiornika")) {
           // Hide the section
           $subsection.hide();
 
@@ -381,6 +384,32 @@
           .closest(".checkbox-option")
           .addClass("disabled-checkbox");
       }
+    });
+  }
+
+  /**
+   * Setup clear button functionality
+   */
+  function setupClearButton() {
+    // Add click event handler for the clear button in step 1
+    $(document).on("click", "#clear-serwis", function() {
+      // Uncheck all checkboxes in all aquarium sections
+      $('.akwarium-section input[type="checkbox"]').prop("checked", false);
+      
+      // Enable all type checkboxes that might have been disabled
+      $('.akwarium-section input[name^="akw"][name$="[typ][]"]').prop("disabled", false);
+      
+      // Remove disabled-checkbox class from all checkbox options
+      $('.akwarium-section .checkbox-option').removeClass("disabled-checkbox");
+      
+      // Show a brief confirmation message
+      const $errorMessage = $("#step1-error");
+      $errorMessage.text("Wszystkie zaznaczenia zostały wyczyszczone").show();
+      
+      // Hide the message after 3 seconds
+      setTimeout(function() {
+        $errorMessage.fadeOut(300);
+      }, 3000);
     });
   }
 
@@ -707,7 +736,7 @@
 
       if (selectedMode === "dodatkowe") {
         // For "Usługi dodatkowe" mode, check only "Inne potrzeby" subsections
-        const $visibleSubsection = $section.find(".subsection.inne-potrzeby");
+        const $visibleSubsection = $section.find(".subsection-typ-zbiornika");
 
         // Check if any checkbox is selected in this subsection
         $visibleSubsection
@@ -1019,11 +1048,6 @@
       });
     });
   }
-
-  /*
-   * Local recommendations function has been removed.
-   * All recommendations are now retrieved exclusively from the admin panel via AJAX.
-   */
 
   /**
    * Display package recommendations

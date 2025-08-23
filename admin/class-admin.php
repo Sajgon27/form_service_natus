@@ -47,46 +47,24 @@ class Serwis_Natu_Admin {
      * @var array
      */
     private $subscription_packages = array();
+    
+    /**
+     * Available additional services
+     *
+     * @var array
+     */
+    private $additional_services = array();
 
     /**
      * Constructor
      */
     public function __construct() {
-        // Define available packages
-        $this->one_time_packages = array(
-            'basic' => array(
-                'name' => __('Podstawowy serwis akwarium', 'serwis-natu'),
-                'price' => 150
-            ),
-            'extended' => array(
-                'name' => __('Rozszerzony serwis akwarium', 'serwis-natu'),
-                'price' => 250
-            ),
-            'complete' => array(
-                'name' => __('Serwis akwarium od A do Z', 'serwis-natu'),
-                'price' => 350
-            ),
-            'consultation' => array(
-                'name' => __('Konsultacja akwarystyczna', 'serwis-natu'),
-                'price' => 100
-            )
-        );
-        
-        $this->subscription_packages = array(
-            'monthly_basic' => array(
-                'name' => __('Podstawowy pakiet miesięczny', 'serwis-natu'),
-                'price' => 300
-            ),
-            'monthly_extended' => array(
-                'name' => __('Rozszerzony pakiet miesięczny', 'serwis-natu'),
-                'price' => 500
-            ),
-            'monthly_complete' => array(
-                'name' => __('Kompleksowy pakiet miesięczny', 'serwis-natu'),
-                'price' => 800
-            )
-        );
-        
+        // Load the package settings from the database
+        $this->load_package_settings();
+
+        // Include the packages admin page
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin-pakiety.php';
+
         // Register hooks
         add_action('admin_menu', array($this, 'add_admin_menu'),1);
         add_action('admin_init', array($this, 'register_settings'));
@@ -108,8 +86,8 @@ class Serwis_Natu_Admin {
 
         add_submenu_page(
             'serwis-natu-settings',
-            __('Ustawienia', 'serwis-natu'),
-            __('Ustawienia', 'serwis-natu'),
+            __('Mapowanie opcji', 'serwis-natu'),
+            __('Mapowanie opcji', 'serwis-natu'),
             'manage_options',
             'serwis-natu-settings',
             array($this, 'render_settings_page'),
@@ -167,6 +145,20 @@ class Serwis_Natu_Admin {
         ?>
         <p><?php _e('Skonfiguruj, które opcje formularza mają odpowiadać którym pakietom oraz jakie produkty mają być polecane dla poszczególnych opcji. Dla każdej opcji, wybierz odpowiedni pakiet jednorazowy, miesięczny oraz do dwóch produktów WooCommerce, które chcesz polecić.', 'serwis-natu'); ?></p>
         <?php
+    }
+
+    /**
+     * Load package settings from the database
+     */
+    private function load_package_settings() {
+        // Load one time packages
+        $this->one_time_packages = get_option('serwis_natu_one_time_packages', array());
+        
+        // Load subscription packages
+        $this->subscription_packages = get_option('serwis_natu_subscription_packages', array());
+        
+        // Load additional services
+        $this->additional_services = get_option('serwis_natu_additional_services', array());
     }
 
     /**
@@ -284,7 +276,7 @@ class Serwis_Natu_Admin {
         
         <div class="product-mapping-row">
             <div class="product-mapping-column">
-                <label><?php _e('Polecany produkt 1:', 'serwis-natu'); ?></label>
+                <label><strong><?php _e('Polecany produkt 1:', 'serwis-natu'); ?></strong></label>
                 <select name="<?php echo esc_attr($this->option_name); ?>[<?php echo esc_attr($name); ?>][product_1]">
                     <option value=""><?php _e('-- Wybierz produkt --', 'serwis-natu'); ?></option>
                     <?php foreach ($products as $product_id => $product_name) : ?>
@@ -296,7 +288,7 @@ class Serwis_Natu_Admin {
             </div>
             
             <div class="product-mapping-column">
-                <label><?php _e('Polecany produkt 2:', 'serwis-natu'); ?></label>
+                <label><strong><?php _e('Polecany produkt 2:', 'serwis-natu'); ?></strong></label>
                 <select name="<?php echo esc_attr($this->option_name); ?>[<?php echo esc_attr($name); ?>][product_2]">
                     <option value=""><?php _e('-- Wybierz produkt --', 'serwis-natu'); ?></option>
                     <?php foreach ($products as $product_id => $product_name) : ?>
@@ -565,7 +557,8 @@ class Serwis_Natu_Admin {
     public function get_packages() {
         return array(
             'one_time' => $this->one_time_packages,
-            'subscription' => $this->subscription_packages
+            'subscription' => $this->subscription_packages,
+            'additional' => $this->additional_services
         );
     }
 
@@ -741,39 +734,20 @@ class Serwis_Natu_Admin {
      * @return array All packages
      */
     public static function get_all_packages() {
+        // Create a new instance of the packages admin class
+        require_once plugin_dir_path(dirname(__FILE__)) . 'admin/admin-pakiety.php';
+        $packages_admin = new Serwis_Natu_Admin_Packages();
+        
+        // Get one-time packages
+        $one_time_packages = $packages_admin->get_one_time_packages();
+        
+        // Get subscription packages
+        $subscription_packages = $packages_admin->get_subscription_packages();
+        
+        // Return the combined packages
         return array(
-            'one_time' => array(
-                'basic' => array(
-                    'name' => __('Podstawowy serwis akwarium', 'serwis-natu'),
-                    'price' => 150
-                ),
-                'extended' => array(
-                    'name' => __('Rozszerzony serwis akwarium', 'serwis-natu'),
-                    'price' => 250
-                ),
-                'complete' => array(
-                    'name' => __('Serwis akwarium od A do Z', 'serwis-natu'),
-                    'price' => 350
-                ),
-                'consultation' => array(
-                    'name' => __('Konsultacja akwarystyczna', 'serwis-natu'),
-                    'price' => 100
-                )
-            ),
-            'subscription' => array(
-                'monthly_basic' => array(
-                    'name' => __('Podstawowy pakiet miesięczny', 'serwis-natu'),
-                    'price' => 300
-                ),
-                'monthly_extended' => array(
-                    'name' => __('Rozszerzony pakiet miesięczny', 'serwis-natu'),
-                    'price' => 500
-                ),
-                'monthly_complete' => array(
-                    'name' => __('Kompleksowy pakiet miesięczny', 'serwis-natu'),
-                    'price' => 800
-                )
-            )
+            'one_time' => $one_time_packages,
+            'subscription' => $subscription_packages
         );
     }
 }

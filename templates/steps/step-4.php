@@ -14,19 +14,15 @@ defined('ABSPATH') || exit;
         <?php _e('Sprawdź poprawność danych przed zamówieniem usługi.', 'serwis-natu'); ?>
     </p>
 
-        <!-- Contact information section -->
     <div class="form-section">
         <h3><?php _e('Dane kontaktowe', 'serwis-natu'); ?></h3>
         <div id="contact-summary" class="contact-summary">
-            <!-- Will be populated by JavaScript -->
         </div>
     </div>
 
-    <!-- Aquariums summary section -->
     <div class="form-section">
         <h3><?php _e('Podsumowanie akwariów', 'serwis-natu'); ?></h3>
         <div id="aquariums-summary" class="aquariums-summary">
-            <!-- Will be populated by JavaScript -->
             <div class="loading-spinner">
                 <div class="spinner"></div>
                 <?php _e('Ładowanie danych...', 'serwis-natu'); ?>
@@ -34,20 +30,15 @@ defined('ABSPATH') || exit;
         </div>
     </div>
 
-
-
-    <!-- Cost summary section -->
     <div class="form-section">
         <h3><?php _e('Podsumowanie kosztów', 'serwis-natu'); ?></h3>
         <div id="final-cost-summary" class="final-cost-summary">
-            <!-- Will be populated by JavaScript -->
         </div>
         <p class="cost-disclaimer">
             <?php _e('Uwaga: Ostateczna cena może się różnić po ocenie stanu akwarium przez serwisanta.', 'serwis-natu'); ?>
         </p>
     </div>
 
-    <!-- Preparation instructions -->
     <div class="form-section">
         <h3><?php _e('Instrukcja przygotowania do wizyty', 'serwis-natu'); ?></h3>
         <ol class="preparation-instructions">
@@ -60,7 +51,6 @@ defined('ABSPATH') || exit;
         </ol>
     </div>
 
-    <!-- Terms and conditions acceptance -->
     <div class="form-section terms-section">
         <div id="step4-error" class="error-message" style="display: none;">
             <?php _e('Aby zamówić usługę, musisz zaakceptować politykę prywatności i regulamin.', 'serwis-natu'); ?>

@@ -1,0 +1,46 @@
+/**
+ * Admin styles for the orders page
+ */
+
+/* Orders page styling */
+.serwis_page_serwis-natu-aquarium_orders .tablenav-pages {
+    margin: 20px 0;
+    float: right;
+}
+
+.serwis_page_serwis-natu-aquarium_orders .tablenav-pages .button,
+.serwis_page_serwis-natu-aquarium_orders .tablenav-pages .tablenav-pages-navspan {
+    display: inline-block;
+    min-width: 30px;
+    min-height: 30px;
+    margin: 0 2px;
+    padding: 0 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.serwis_page_serwis-natu-aquarium_orders .tablenav-pages .current-page {
+    text-align: center;
+    width: 50px;
+}
+
+.serwis_page_serwis-natu-aquarium_orders .button-secondary {
+    color: #a00;
+    border-color: #a00;
+}
+
+.serwis_page_serwis-natu-aquarium_orders .button-secondary:hover {
+    color: #dc3232;
+    border-color: #dc3232;
+    background: #f6f7f7;
+}
+
+/* Action buttons styling */
+.serwis_page_serwis-natu-aquarium_orders td .button {
+    margin-right: 5px;
+}
+
+/* Status message styling */
+.serwis_page_serwis-natu-aquarium_orders .notice {
+    margin: 15px 0;
+}

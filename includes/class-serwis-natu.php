@@ -135,7 +135,7 @@ class Serwis_Natu
         $recommendations = Serwis_Natu_Package_Recommender::get_recommendations($form_data);
 
         // Get extra services
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-extra-services.php';
         $extra_services = Serwis_Natu_Extra_Services::get_extra_services();
 
         // Return recommendations and extra services
@@ -150,13 +150,14 @@ class Serwis_Natu
      */
     private function include_files()
     {
-        require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-package-recommender.php';
-        require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-form-populate.php';
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
-        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-zamowienia.php';
-        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-single-zamowienie.php';
-        require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-recommended-products.php';
-        require_once SERWIS_NATU_PATH . 'includes/class-serwis-natu-my-account.php';
+        require_once SERWIS_NATU_PATH . 'includes/class-package-recommender.php';
+        require_once SERWIS_NATU_PATH . 'includes/populate-form.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-extra-services.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-zamowienia.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-single-zamowienie.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-pakiety.php';
+        require_once SERWIS_NATU_PATH . 'includes/class-recommended-products.php';
+        require_once SERWIS_NATU_PATH . 'includes/class-my-account.php';
     }
 
     /**
@@ -164,13 +165,17 @@ class Serwis_Natu
      */
     private function init_admin()
     {
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-admin.php';
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-extra-services.php';
-        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-zamowienia.php';
-        require_once SERWIS_NATU_PATH . 'admin/admin-serwis-natu-single-zamowienie.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-admin.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-extra-services.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-zamowienia.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-single-zamowienie.php';
+        require_once SERWIS_NATU_PATH . 'admin/admin-pakiety.php';
 
         $this->admin = new Serwis_Natu_Admin();
         $this->extra_services = new Serwis_Natu_Extra_Services();
+        
+        // Initialize package admin
+      //  new Serwis_Natu_Admin_Packages();
 
         // Register admin assets
         add_action('admin_enqueue_scripts', array($this, 'register_admin_assets'));
@@ -202,16 +207,6 @@ class Serwis_Natu
             'serwis-natu-style',
             SERWIS_NATU_URL . 'assets/css/serwis-natu.css',
             array(),
-            SERWIS_NATU_VERSION
-        );
-
-
-
-        // Register Summary CSS
-        wp_register_style(
-            'serwis-natu-summary',
-            SERWIS_NATU_URL . 'assets/css/summary.css',
-            array('serwis-natu-style'),
             SERWIS_NATU_VERSION
         );
 

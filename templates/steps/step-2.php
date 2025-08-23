@@ -14,7 +14,6 @@ defined('ABSPATH') || exit;
         <?php _e('Podaj swoje dane kontaktowe oraz adres, pod którym znajduje się akwarium.', 'serwis-natu'); ?>
     </p>
 
-    <!-- Dane kontaktowe -->
     <div class="form-section">
         <h3><?php _e('Dane kontaktowe', 'serwis-natu'); ?></h3>
         <div class="form-row two-columns">
@@ -42,7 +41,6 @@ defined('ABSPATH') || exit;
         </div>
     </div>
     
-    <!-- Adres i lokalizacja -->
     <div class="form-section">
         <h3><?php _e('Adres i lokalizacja akwarium', 'serwis-natu'); ?></h3>
         
@@ -52,8 +50,6 @@ defined('ABSPATH') || exit;
                 <input type="text" id="aquarium_address" name="aquarium_address" required>
             </div>
       
-        
-       
             <div class="form-field">
                 <label for="preferred_date"><?php _e('Preferowany termin', 'serwis-natu'); ?><span class="required">*</span></label>
                 <input type="datetime-local" id="preferred_date" name="preferred_date" required>
@@ -61,7 +57,6 @@ defined('ABSPATH') || exit;
         </div>
     </div>
     
-    <!-- Zdjęcia akwarium -->
     <div class="form-section">
         <h3><?php _e('Zdjęcie akwarium (opcjonalne)', 'serwis-natu'); ?></h3>
         <p class="section-description">
@@ -69,7 +64,6 @@ defined('ABSPATH') || exit;
         </p>
         
         <div class="aquarium-photos-container">
-            <!-- Dynamically generated file upload fields will be placed here by JavaScript -->
             <div class="form-row photo-upload-row" id="photo-upload-1">
                 <div class="form-field">
                     <label for="aquarium_photo_1"><?php _e('Zdjęcie akwarium 1', 'serwis-natu'); ?></label>
@@ -80,12 +74,10 @@ defined('ABSPATH') || exit;
         </div>
     </div>
     
-    <!-- Dodatkowe uwagi -->
     <div class="form-section">
         <h3><?php _e('Dodatkowe uwagi (opcjonalne)', 'serwis-natu'); ?></h3>
         <div class="form-row">
             <div class="form-field">
-               
                 <textarea id="additional_notes" name="additional_notes" rows="4"></textarea>
             </div>
         </div>

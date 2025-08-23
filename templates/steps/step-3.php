@@ -14,23 +14,16 @@ defined('ABSPATH') || exit;
         <?php _e('Na podstawie podanych informacji dopasowaliśmy pakiety serwisowe indywidualnie dla każdego zgłoszonego akwarium.', 'serwis-natu'); ?>
     </p>
 
-    <!-- Recommended packages container -->
     <div id="recommended-packages">
         <div class="form-section">
           
-            
             <div id="package-recommendations">
-                <!-- Package recommendations will be loaded here by JavaScript -->
                 <div class="loading-spinner">
                     <div class="spinner"></div>
                     <?php _e('Przygotowujemy rekomendacje...', 'serwis-natu'); ?>
                 </div>
             </div>
         </div>
-        
-       
-        
-   
         
         <div class="form-section">
             <h3><?php _e('Lista rekomendowanych produktów', 'serwis-natu'); ?></h3>
@@ -42,7 +35,6 @@ defined('ABSPATH') || exit;
               
             </div>
             
-            <!-- Recommended products container will be populated by JavaScript -->
             <div id="recommended-products-container" style="display: none;">
                 <div class="loading-spinner">
                     <div class="spinner"></div>

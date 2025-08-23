@@ -71,7 +71,7 @@ class Serwis_Natu_Package_Recommender {
      */
     private static function get_package_for_aquarium($form_data, $service_type, $aquarium_index) {
         // Get package mappings from admin settings
-        require_once SERWIS_NATU_PATH . 'admin/class-serwis-natu-admin.php';
+        require_once SERWIS_NATU_PATH . 'admin/class-admin.php';
         
         // Debug the form data for this aquarium
         if (isset($form_data['akw'][$aquarium_index])) {
@@ -82,28 +82,64 @@ class Serwis_Natu_Package_Recommender {
         
         // Convert service type to package type
         $package_type = 'one_time';
-        if ($service_type === 'pakiet' || $service_type === 'wielorazowy') {
+        if ($service_type === 'pakiet' || $service_type === 'wielorazowy' || $service_type === 'cykliczna') {
             $package_type = 'subscription';
             // Log this for debugging
             error_log('Using subscription package type for service type: ' . $service_type);
         }
         
-        // Default packages
+        // Get all available packages
         $all_packages = Serwis_Natu_Admin::get_all_packages();
-        $default_key = ($package_type === 'one_time') ? 'basic' : 'monthly_basic';
+        
+        // Find default package (first package in the appropriate category)
+        if (empty($all_packages[$package_type])) {
+            // If no packages are available in this category
+            return array(
+                'key' => '',
+                'name' => __('Brak skonfigurowanego pakietu', 'serwis-natu'),
+                'price' => 0,
+            );
+        }
+        
+        $package_keys = array_keys($all_packages[$package_type]);
+        $default_key = reset($package_keys);
         $default_package = array(
             'key' => $default_key,
             'name' => $all_packages[$package_type][$default_key]['name'],
             'price' => $all_packages[$package_type][$default_key]['price'],
         );
         
-        // If "Usługi dodatkowe" service type, always return consultation package
+        // If "Usługi dodatkowe" service type, ALWAYS use the "additional_services" package
         if ($service_type === 'dodatkowe') {
-            return array(
-                'key' => 'consultation',
-                'name' => $all_packages['one_time']['consultation']['name'],
-                'price' => $all_packages['one_time']['consultation']['price'],
-            );
+            // Create a new instance of the packages admin class to get additional services
+            require_once SERWIS_NATU_PATH . 'admin/admin-pakiety.php';
+            $packages_admin = new Serwis_Natu_Admin_Packages();
+            
+            // Get additional services
+            $additional_services = $packages_admin->get_additional_services();
+            
+            // Check if we have the additional_services key
+            if (isset($additional_services['additional_services'])) {
+                return array(
+                    'key' => 'additional_services',
+                    'name' => $additional_services['additional_services']['name'],
+                    'price' => $additional_services['additional_services']['price'],
+                );
+            }
+            
+            // If for some reason the additional_services key doesn't exist,
+            // get the first available additional service
+            if (!empty($additional_services)) {
+                $first_key = array_key_first($additional_services);
+                return array(
+                    'key' => $first_key,
+                    'name' => $additional_services[$first_key]['name'],
+                    'price' => $additional_services[$first_key]['price'],
+                );
+            }
+            
+            // As a last resort, if no additional services are configured, use default package
+            return $default_package;
         }
         
         // Get aquarium data
@@ -114,20 +150,24 @@ class Serwis_Natu_Package_Recommender {
         $aquarium_data = $form_data['akw'][$aquarium_index];
         $package_mappings = Serwis_Natu_Admin::get_package_mappings();
         
-        // Package priorities (lowest to highest)
-        $package_priorities = array(
-            'one_time' => array(
-                'consultation' => 1,
-                'basic' => 2,
-                'extended' => 3,
-                'complete' => 4
-            ),
-            'subscription' => array(
-                'monthly_basic' => 1,
-                'monthly_extended' => 2,
-                'monthly_complete' => 3
-            )
-        );
+        // Build package priorities dynamically based on available packages
+        $package_priorities = array();
+        $priority = 1;
+        
+        if (isset($all_packages['one_time'])) {
+            $package_priorities['one_time'] = array();
+            foreach (array_keys($all_packages['one_time']) as $key) {
+                $package_priorities['one_time'][$key] = $priority++;
+            }
+        }
+        
+        $priority = 1;
+        if (isset($all_packages['subscription'])) {
+            $package_priorities['subscription'] = array();
+            foreach (array_keys($all_packages['subscription']) as $key) {
+                $package_priorities['subscription'][$key] = $priority++;
+            }
+        }
         
         // Find highest priority package for this aquarium
         $highest_priority = 0;
@@ -158,7 +198,7 @@ class Serwis_Natu_Package_Recommender {
         }
         
         // If no package was selected, use default
-        if (empty($selected_package_key)) {
+        if (empty($selected_package_key) || !isset($all_packages[$package_type][$selected_package_key])) {
             return $default_package;
         }
         

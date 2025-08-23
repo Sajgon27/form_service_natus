@@ -108,7 +108,7 @@ function display_order_detail_page()
     echo '<div class="order-detail-header">';
     echo '<div>';
     echo '<h1>Szczegóły zamówienia #' . esc_html($order['id']) . '</h1>';
-    echo '<p class="order-date">Data złożenia: ' . date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($order['created_at'])) . '</p>';
+    echo '<p class="order-date">Data złożenia: ' . serwis_natu_format_polish_date($order['created_at']) . '</p>';
     echo '</div>';
     
     // Get current status or default to 'Oczekujące'
@@ -294,7 +294,7 @@ function display_order_detail_page()
 
     // Display total price if available
     if (!empty($order['total_price'])) {
-        echo '<div class="order-price">Łączna cena zamówienia: ' . number_format((float)$order['total_price'], 2, ',', ' ') . ' zł</div>';
+        echo '<div class="order-price">Łączna cena zamówienia wysłana do klienta: ' . number_format((float)$order['total_price'], 2, ',', ' ') . ' zł</div>';
     }
 
     // Order actions section
