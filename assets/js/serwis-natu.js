@@ -626,14 +626,47 @@
         // Get recommendations
         const recommendations = window.serwisNatuRecommendations || [];
         
+        // Collect selected service products with full details
+        const selectedServiceProducts = [];
+        $('input.service-product-checkbox-input:checked').each(function() {
+          const $row = $(this).closest('tr');
+          const productId = $(this).val();
+          const productName = $row.find('td:nth-child(2)').text().trim();
+          const priceText = $row.find('td:nth-child(3)').text().trim();
+          const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+          
+          selectedServiceProducts.push({
+            id: productId,
+            name: productName,
+            price: price
+          });
+        });
+        
+        // Add selected service products to form data
+        if (selectedServiceProducts.length > 0) {
+          data.selected_products = selectedServiceProducts;
+        }
+        
         // Merge extra_services into akw and add recommended packages
         for (let akwId in data.akw) {
-          // Add extra services with proper name
-          if (data.extra_services && data.extra_services[akwId]) {
-            data.akw[akwId]["Dodatkowe usługi"] = data.extra_services[akwId];
+          // Get full extra services data with name and price
+          const extraServicesWithPrices = getSelectedExtraServices(akwId);
+          
+          // Add extra services with price
+          if (extraServicesWithPrices.length > 0) {
+            data.akw[akwId]["Dodatkowe usługi"] = extraServicesWithPrices;
           } else {
             data.akw[akwId]["Dodatkowe usługi"] = [];
           }
+          
+          // Calculate total price for extra services
+          let extraServicesTotal = 0;
+          extraServicesWithPrices.forEach(service => {
+            if (service.price) {
+              extraServicesTotal += parseFloat(service.price);
+            }
+          });
+          data.akw[akwId]["extra_services_price"] = extraServicesTotal;
           
           // Add recommended package information
           const aquariumRecommendation = recommendations.find(rec => rec.aquariumIndex == akwId);
@@ -673,8 +706,8 @@
           contentType: false, // Let the browser set the content type for FormData
           success: function (response) {
             console.log(response);
-           // alert("Zgłoszenie wysłane pomyślnie!");
-           // location.reload();
+            alert("Zgłoszenie wysłane pomyślnie!");
+            location.reload();
           },
           error: function (err) {
             console.error(err);
@@ -1366,6 +1399,7 @@
                 <th><h3>Zdjęcie</h3></th>
                 <th><h3>Nazwa produktu</h3></th>
                 <th><h3>Cena</h3></th>
+                <th><h3>Zabierz na serwis</h3></th>
             </tr>
         `);
 
@@ -1380,12 +1414,23 @@
         const productName = product.name || "Produkt bez nazwy";
         const productUrl = product.url || "#";
         const productPrice = product.price || "-";
+        const productId = product.id || "";
 
         $row.append(`<td>${imageContent}</td>`);
         $row.append(
           `<td><a href="${productUrl}" target="_blank">${productName}</a></td>`
         );
         $row.append(`<td>${productPrice}</td>`);
+        $row.append(
+          `<td>
+            <div class="service-product-checkbox">
+              <input type="checkbox" id="service_product_${productId}" 
+                name="service_products[]" value="${productId}" 
+                class="service-product-checkbox-input">
+              <label for="service_product_${productId}"></label>
+            </div>
+           </td>`
+        );
 
         $tbody.append($row);
       } catch (err) {
@@ -1435,8 +1480,63 @@
     // Generate contact information summary
     generateContactSummary();
 
+    // Generate selected products summary
+    generateSelectedProductsSummary();
+
     // Generate final cost summary
     generateFinalCostSummary();
+  }
+  
+  /**
+   * Generate summary of selected products
+   */
+  function generateSelectedProductsSummary() {
+    let $container = $("#products-summary");
+    
+    // If container doesn't exist, create it
+    if ($container.length === 0) {
+      $("#contact-summary").after('<div id="products-summary" class="form-section"></div>');
+      $container = $("#products-summary");
+    }
+    
+    $container.html(""); // Clear container
+    
+    // Check if any product is selected
+    const selectedProducts = [];
+    $('input.service-product-checkbox-input:checked').each(function() {
+      const $row = $(this).closest('tr');
+      const productId = $(this).val();
+      const productName = $row.find('td:nth-child(2)').text().trim();
+      const priceText = $row.find('td:nth-child(3)').text().trim();
+      const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+      
+      selectedProducts.push({
+        id: productId,
+        name: productName,
+        price: price
+      });
+    });
+    
+    // If no products selected, don't show this section
+    if (selectedProducts.length === 0) {
+      $container.hide();
+      return;
+    }
+    
+    // Build summary content
+    $container.append('<h3>Produkty do zabrania na serwis</h3>');
+    const $productsList = $('<ul class="selected-products-list"></ul>');
+    
+    selectedProducts.forEach(function(product) {
+      let displayText = product.name;
+      if (product.price > 0) {
+        displayText += ` (${product.price.toFixed(2)} zł)`;
+      }
+      $productsList.append(`<li>${displayText}</li>`);
+    });
+    
+    $container.append($productsList);
+    $container.show();
   }
 
   /**
@@ -1690,6 +1790,33 @@
 
         totalCost += service.price;
       });
+    });
+    
+    // Add selected products costs
+    const selectedProducts = [];
+    $('input.service-product-checkbox-input:checked').each(function() {
+      const $row = $(this).closest('tr');
+      const productId = $(this).val();
+      const productName = $row.find('td:nth-child(2)').text().trim();
+      // Extract price from the text (e.g., "99.00 zł" -> 99.00)
+      const priceText = $row.find('td:nth-child(3)').text().trim();
+      const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+      
+      selectedProducts.push({
+        id: productId,
+        name: productName,
+        price: price
+      });
+      
+      // Add to cost items
+      if (price > 0) {
+        costItems.push({
+          label: `Produkt: ${productName}`,
+          price: price,
+        });
+        
+        totalCost += price;
+      }
     });
 
     // Build HTML

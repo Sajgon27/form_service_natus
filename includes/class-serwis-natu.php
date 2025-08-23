@@ -277,8 +277,11 @@ class Serwis_Natu
 }
 
 
-
-
+// Background processing hook to opload images on form submit
+add_action('process_attachment_metadata', function($attachment_id, $file_path) {
+    $attach_data = wp_generate_attachment_metadata($attachment_id, $file_path);
+    wp_update_attachment_metadata($attachment_id, $attach_data);
+}, 10, 2);
 
 add_action('wp_ajax_submit_order', 'handle_submit_order');
 add_action('wp_ajax_nopriv_submit_order', 'handle_submit_order');
@@ -307,41 +310,39 @@ function handle_submit_order()
     
     // Process file uploads
     $uploaded_files = [];
-    foreach ($_FILES as $key => $file) {
-        // Check if it's an aquarium photo (format: aquarium_photo_X)
-        if (strpos($key, 'aquarium_photo_') !== false && !empty($file['name'])) {
-            // Extract aquarium index from the key (e.g., "aquarium_photo_1" => "1")
-            $aquarium_index = str_replace('aquarium_photo_', '', $key);
-            
-            // Upload the file to the WordPress media library
-            $upload = wp_upload_bits($file['name'], null, file_get_contents($file['tmp_name']));
-            
-            if (!$upload['error']) {
-                $wp_filetype = wp_check_filetype($upload['file'], null);
-                
-                // Prepare attachment data
-                $attachment = array(
-                    'post_mime_type' => $wp_filetype['type'],
-                    'post_title' => sanitize_file_name($file['name']),
-                    'post_content' => '',
-                    'post_status' => 'inherit'
-                );
-                
-                // Insert the attachment
-                $attachment_id = wp_insert_attachment($attachment, $upload['file']);
-                
-                // Generate metadata for the attachment
-                $attach_data = wp_generate_attachment_metadata($attachment_id, $upload['file']);
-                wp_update_attachment_metadata($attachment_id, $attach_data);
-                
-                // Store file information for later use
-                $uploaded_files[$aquarium_index] = array(
-                    'url' => $upload['url'],
-                    'attachment_id' => $attachment_id
-                );
+foreach ($_FILES as $key => $file) {
+    if (strpos($key, 'aquarium_photo_') !== false && !empty($file['name'])) {
+        $aquarium_index = str_replace('aquarium_photo_', '', $key);
+
+        // Upload the file (raw upload)
+        $upload = wp_upload_bits($file['name'], null, file_get_contents($file['tmp_name']));
+
+        if (!$upload['error']) {
+            $wp_filetype = wp_check_filetype($upload['file'], null);
+
+            // Insert minimal attachment (skip metadata generation here)
+            $attachment = [
+                'post_mime_type' => $wp_filetype['type'],
+                'post_title'     => sanitize_file_name($file['name']),
+                'post_content'   => '',
+                'post_status'    => 'inherit'
+            ];
+
+            $attachment_id = wp_insert_attachment($attachment, $upload['file']);
+
+            // Schedule background metadata generation
+            if (!wp_next_scheduled('process_attachment_metadata', [$attachment_id, $upload['file']])) {
+                wp_schedule_single_event(time() + 10, 'process_attachment_metadata', [$attachment_id, $upload['file']]);
             }
+
+            $uploaded_files[$aquarium_index] = [
+                'url'           => $upload['url'],
+                'attachment_id' => $attachment_id
+            ];
         }
     }
+}
+
     
     // Add image URLs to aquarium data
     foreach ($uploaded_files as $index => $file_info) {
@@ -354,6 +355,13 @@ function handle_submit_order()
     // Merge aquariums and extra_services already done in JS
     $aquariums_json = maybe_serialize($data['akw']); // store as LONGTEXT (JSON)
 
+    // Process selected products
+    $products_json = null;
+    if (isset($data['selected_products']) && !empty($data['selected_products'])) {
+        // Encode products data as JSON
+        $products_json = wp_json_encode($data['selected_products']);
+    }
+    
     // Prepare order data
     $order_data = array(
         'client_first_name' => sanitize_text_field($data['client_first_name']),
@@ -365,7 +373,8 @@ function handle_submit_order()
         'additional_notes'  => sanitize_textarea_field($data['additional_notes']),
         'aquariums'         => wp_json_encode($data['akw']),
         'cooperative_mode'  => isset($data['tryb_wspolpracy']) ? sanitize_text_field($data['tryb_wspolpracy']) : '',
-        'total_price'       => isset($data['total_cost']) ? floatval($data['total_cost']) : 0
+        'total_price'       => isset($data['total_cost']) ? floatval($data['total_cost']) : 0,
+        'products'          => $products_json
     );
 
     // Format strings for database columns
@@ -379,7 +388,8 @@ function handle_submit_order()
         '%s', // additional_notes
         '%s', // aquariums (JSON)
         '%s', // cooperative_mode
-        '%f'  // total_price
+        '%f', // total_price
+        '%s'  // products (JSON)
     );
 
     // Check if user is logged in
@@ -399,7 +409,7 @@ function handle_submit_order()
     // Get the order ID (last inserted ID)
     $order_id = $wpdb->insert_id;
     
-        // Send confirmation email to customer and notification to admin
+    // Send confirmation email to customer and notification to admin
     if ($insert_result && $order_id) {
         // Prepare data for the email template
         $email_data = array(
@@ -408,6 +418,7 @@ function handle_submit_order()
             'email' => $data['client_email'],
             'telefon' => $data['client_phone'],
             'adres' => $data['aquarium_address'],
+            'products' => isset($products_json) ? $products_json : '',
             'preferowany_termin' => $data['preferred_date'],
             'tryb_wspolpracy' => isset($data['tryb_wspolpracy']) ? $data['tryb_wspolpracy'] : '',
             'cena' => isset($data['total_cost']) ? floatval($data['total_cost']) : 0,

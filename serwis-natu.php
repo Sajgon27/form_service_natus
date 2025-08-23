@@ -109,6 +109,7 @@ function serwis_natu_create_orders_table()
     aquariums LONGTEXT NULL,  -- JSON {1: {details, extra_services: []}, 2: {...}}
     total_price DECIMAL(10,2) NOT NULL DEFAULT 0,
     cooperative_mode VARCHAR(100) NOT NULL,
+    products LONGTEXT NULL, -- JSON { products ids}
     status ENUM('Potwierdzone','Anulowane','Oczekujące') NOT NULL DEFAULT 'Oczekujące',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -189,12 +190,13 @@ function serwis_natu_send_custom_email_to_client()
 
     // Prepare data for the email template
     $email_data = array(
-        'client_first_name' => $order['client_first_name'],
-        'client_last_name' => $order['client_last_name'],
-        'client_email' => $order['client_email'],
-        'client_phone' => $order['client_phone'],
-        'aquarium_address' => $order['aquarium_address'],
-        'preferred_date' => $order['preferred_date'],
+        'imie' => $order['client_first_name'],
+        'nazwisko' => $order['client_last_name'],
+        'email' => $order['client_email'],
+        'telefon' => $order['client_phone'],
+        'adres' => $order['aquarium_address'],
+        'products' => $order['products'],
+        'preferowany_termin' => $order['preferred_date'],
         'tryb_wspolpracy' => $order['cooperative_mode'],
         'cena' => $order['total_price'],
         'created_at' => $order['created_at']

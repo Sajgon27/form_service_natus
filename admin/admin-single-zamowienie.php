@@ -138,6 +138,48 @@ function display_order_detail_page()
     echo '</div>';
     echo '</div>';
 
+
+        // Display selected products if available
+    if (!empty($order['products'])) {
+        // Decode products JSON
+        $products = json_decode($order['products'], true);
+        
+        if (!empty($products) && is_array($products)) {
+            echo '<div class="order-info-box products-info-box">';
+            echo '<h2>Wybrane produkty</h2>';
+            echo '<div class="products-list">';
+            echo '<table class="wp-list-table widefat fixed striped">';
+            echo '<thead><tr>';
+            echo '<th>Nazwa produktu</th>';
+            echo '<th>Cena</th>';
+            echo '</tr></thead>';
+            echo '<tbody>';
+            
+            $products_total = 0;
+            
+            foreach ($products as $product) {
+                echo '<tr>';
+                echo '<td>' . esc_html($product['name']) . '</td>';
+                echo '<td>' . number_format((float)$product['price'], 2, ',', ' ') . ' zł</td>';
+                echo '</tr>';
+                
+                // Add to products total
+                $products_total += (float)$product['price'];
+            }
+            
+            echo '</tbody>';
+            echo '<tfoot>';
+            echo '<tr>';
+            echo '<th>Razem za produkty:</th>';
+            echo '<th>' . number_format($products_total, 2, ',', ' ') . ' zł</th>';
+            echo '</tr>';
+            echo '</tfoot>';
+            echo '</table>';
+            echo '</div>'; // Close products-list
+            echo '</div>'; // Close order-info-box
+        }
+    }
+
     // Status selection box
     echo '<div class="order-info-box">';
     echo '<h2>Status zamówienia</h2>';
@@ -218,7 +260,7 @@ function display_order_detail_page()
                 // Organize data into details and services
                 if ($key == 'typ' || $key == 'wielkosc' || $key == 'parametry' || $key == 'glebokosc') {
                     $details[$key] = $value;
-                } else if ($key != 'photo_url' && $key != 'photo_attachment_id') {
+                } else if ($key != 'photo_url' && $key != 'photo_attachment_id' && $key != 'extra_services_price') {
                     $services[$key] = $value;
                 }
             }
@@ -267,10 +309,32 @@ function display_order_detail_page()
                     if (is_array($value)) {
                         echo '<h4>' . esc_html($display_key) . ':</h4>';
                         echo '<ul class="service-list">';
+                        
                         foreach ($value as $item) {
-                            echo '<li>' . esc_html($item) . '</li>';
+                            // Check if the item is an array with name and price (new format)
+                            if (is_array($item) && isset($item['name'])) {
+                                echo '<li>';
+                                echo esc_html($item['name']);
+                                
+                                // Add price if available
+                                if (isset($item['price'])) {
+                                    echo ' - <span class="service-price">' . number_format((float)$item['price'], 2, ',', ' ') . ' zł</span>';
+                                }
+                                
+                                echo '</li>';
+                            } else {
+                                // Fallback for simple string items (old format)
+                                echo '<li>' . esc_html($item) . '</li>';
+                            }
                         }
+                        
                         echo '</ul>';
+                        
+                        // If this is Dodatkowe usługi and we have a price, show total
+                        if ($key === 'Dodatkowe usługi' && isset($akw['extra_services_price']) && $akw['extra_services_price'] > 0) {
+                            echo '<div class="extra-services-total">Razem za dodatkowe usługi: <strong>' . 
+                                number_format((float)$akw['extra_services_price'], 2, ',', ' ') . ' zł</strong></div>';
+                        }
                     } else {
                         echo '<h4>' . esc_html($display_key) . ':</h4> ' . esc_html($value) . '</p>';
                     }
@@ -292,6 +356,8 @@ function display_order_detail_page()
 
     echo '</div>'; // Close order-detail-columns
 
+
+    
     // Display total price if available
     if (!empty($order['total_price'])) {
         echo '<div class="order-price">Łączna cena zamówienia wysłana do klienta: ' . number_format((float)$order['total_price'], 2, ',', ' ') . ' zł</div>';
@@ -469,6 +535,24 @@ function display_order_detail_page()
             font-weight: 600;
             margin: 5px 0;
         }
+   
+        .products-list table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .products-list th {
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+        }
+        .products-list td {
+            padding: 8px;
+        }
+        .products-list tfoot {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
         .aquarium-details h4 {
             margin-top: 15px;
             margin-bottom: 8px;
@@ -477,6 +561,19 @@ function display_order_detail_page()
         .service-list, .detail-list {
             margin-top: 5px;
             margin-bottom: 15px;
+        }
+        
+        .service-price {
+            color: #2271b1;
+            font-weight: 500;
+        }
+        
+        .extra-services-total {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #f0f7ff;
+            border-radius: 3px;
+            display: inline-block;
         }
         
         /* Status styles */

@@ -29,6 +29,9 @@ defined('ABSPATH') || exit;
             </div>
         </div>
     </div>
+    
+    <!-- Selected products will be displayed here if any are selected -->
+    <div id="products-summary" class="form-section" style="display: none;"></div>
 
     <div class="form-section">
         <h3><?php _e('Podsumowanie kosztów', 'serwis-natu'); ?></h3>

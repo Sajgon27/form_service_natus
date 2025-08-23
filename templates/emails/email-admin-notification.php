@@ -233,12 +233,12 @@ if (!defined('ABSPATH')) {
 
                         <?php
                         // Wyświetl pozostałe dane akwarium
-                        $excluded_keys = array('typ', 'Dopasowany pakiet', 'photo_url', 'photo_attachment_id');
+                        $excluded_keys = array('typ', 'Dopasowany pakiet', 'photo_url', 'photo_attachment_id', 'Dodatkowe usługi', 'extra_services_price');
                         foreach ($akwarium as $key => $value) :
                             if (!in_array($key, $excluded_keys)) :
                         ?>
                             <div class="service-list">
-                                <strong><?php echo esc_html($key) . ':'; ?></strong>
+                                <strong style="text-transform: capitalize;"><?php echo esc_html($key) . ':'; ?></strong>
                                 <?php if (is_array($value)) : ?>
                                     <ul>
                                         <?php foreach ($value as $item) : ?>
@@ -251,6 +251,28 @@ if (!defined('ABSPATH')) {
                             </div>
                         <?php endif; endforeach; ?>
 
+                        <?php if (isset($akwarium['Dodatkowe usługi']) && is_array($akwarium['Dodatkowe usługi']) && !empty($akwarium['Dodatkowe usługi'])) : ?>
+                            <div class="service-list">
+                                <strong><?php echo __('Dodatkowe usługi:', 'serwis-natu'); ?></strong>
+                                <ul>
+                                    <?php foreach ($akwarium['Dodatkowe usługi'] as $service) : ?>
+                                        <li>
+                                            <?php 
+                                            if (is_array($service) && isset($service['name'])) {
+                                                echo esc_html($service['name']);
+                                                if (isset($service['price'])) {
+                                                    echo ' - ' . number_format((float)$service['price'], 2, ',', ' ') . ' ' . __('zł', 'serwis-natu');
+                                                }
+                                            } else {
+                                                echo is_string($service) ? esc_html($service) : '';
+                                            }
+                                            ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if (isset($akwarium['photo_url'])) : ?>
                             <div class="service-list">
                                 <strong><?php echo __('Zdjęcie akwarium:', 'serwis-natu'); ?></strong>
@@ -261,6 +283,42 @@ if (!defined('ABSPATH')) {
                 <?php endforeach; ?>
             </div>
 
+            <?php 
+            // Display selected products if available
+            $products = isset($dane['products']) ? json_decode($dane['products'], true) : [];
+            if (!empty($products) && is_array($products)) : 
+            ?>
+                <div class="section">
+                    <h2><?php echo __('Wybrane produkty', 'serwis-natu'); ?></h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th><?php echo __('Nazwa produktu', 'serwis-natu'); ?></th>
+                                <th><?php echo __('Cena', 'serwis-natu'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            $products_total = 0;
+                            foreach ($products as $product) : 
+                                $products_total += (float)$product['price'];
+                            ?>
+                                <tr>
+                                    <td><?php echo esc_html($product['name']); ?></td>
+                                    <td><?php echo number_format((float)$product['price'], 2, ',', ' ') . ' zł'; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td><?php echo __('Razem za produkty', 'serwis-natu'); ?></td>
+                                <td><?php echo number_format($products_total, 2, ',', ' ') . ' zł'; ?></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            <?php endif; ?>
+            
             <?php if (!empty($dane['cena'])) : ?>
                 <div class="section">
                     <h2><?php echo __('Kwota zamówienia:', 'serwis-natu'); ?></h2>

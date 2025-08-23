@@ -202,6 +202,7 @@ input[type="checkbox"]:focus-visible,
 input[type="checkbox"]:focus {
   outline: none !important;
 }
+/* Original styles */
 .checkbox-option,
 .extra-service-item,
 label:has(input[type="checkbox"]) {
@@ -266,6 +267,57 @@ label:has(input[type="checkbox"]) {
   gap: 6px;
 }
 
+/* Additional styles for your specific checkbox structure */
+.service-product-checkbox {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.service-product-checkbox-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.service-product-checkbox-input:checked {
+  background-color: #7cb342;
+  border-color: #7cb342;
+}
+
+.service-product-checkbox-input:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.service-product-checkbox label {
+  cursor: pointer;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .checkbox-option label {
     display: block;
 }
@@ -748,6 +800,42 @@ input[type="checkbox"]:disabled {
   object-fit: cover;
   display: block;
 }
+
+/* Service product checkboxes styling */
+.service-product-checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.service-product-checkbox-input {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.service-product-checkbox label {
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.service-product-checkbox-input:checked + label {
+  font-weight: bold;
+  color: var(--sa-primary);
+}
+
+/* Selected products in summary */
+.selected-products-list {
+  margin: 10px 0;
+  padding-left: 25px;
+}
+
+.selected-products-list li {
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  position: relative;
+}
+
+
 
 /* No products message */
 .no-products-message {
